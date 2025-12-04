@@ -1,0 +1,76 @@
+# R and RStudio files
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.Rproj
+.httr-oauth
+
+# R package development
+*.tar.gz
+*.Rcheck/
+vignettes/*.html
+vignettes/*.pdf
+
+# Output files
+*.html
+*.pdf
+*.png
+*.jpg
+*.jpeg
+*.xlsx
+*.xls
+*.csv
+figures/
+!config/*.csv
+!config/*.txt
+
+# Archived files
+old_analysis_files/
+
+# Data files (too large for git)
+data/*
+!data/README.md
+*.fastq
+*.fq
+*.bam
+*.sam
+*.bed
+*.gtf
+*.gff
+*.fa
+*.fasta
+*.count
+*.txt
+!config/*.txt
+
+# Temporary files
+*.log
+*.tmp
+*.temp
+*~
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Icon?
+
+# IDE files
+.vscode/
+.idea/
+
+# Python (if any scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints
+
+# renv (if using)
+renv/library/
+renv/local/
+renv/staging/

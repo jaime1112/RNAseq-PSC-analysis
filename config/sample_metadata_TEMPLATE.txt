@@ -1,0 +1,7 @@
+SampleID	CellType	Batch	Species	Condition
+Sample1	hPSC	1	human	control
+Sample2	hPSC	1	human	control
+Sample3	hPSC	1	human	control
+Sample4	pPSC	1	pig	treatment
+Sample5	pPSC	1	pig	treatment
+Sample6	pPSC	1	pig	treatment

@@ -1,0 +1,13 @@
+dataset_name,filepath,remove_pattern
+hESC_ours,data/hESC_ours/hESC_ours.txt,
+hESC_Selmi,data/hESC_Selmi_2021/hESC_Selmi_2021.txt,
+hESC_Io,data/hESC_Io_2021/hESC_Io_2021.txt,
+Embryo_Secher,data/Embryo_Secher_2017_noFib/Embryo_Secher_2017_noFib.txt,
+piPSC_ours,data/piPSC_ours/piPSC_ours.txt,
+pESC_Choi2024,data/pESC_Choi_2024/pESC_Choi_2024.txt,
+piPSC_FF_ours,data/piPSC-FF_ours/piPSC-FF_ours.txt,
+piPSC_Yoshimatsu,data/piPSC_Yoshimatsu_2021_noFib/piPSC_Yoshimatsu_2021_noFib.txt,
+pESC_Choi2019,data/pESC_Choi_2019/pESC_Choi_2019.txt,
+piPSC_Zhu,data/piPSC_Zhu_2023/piPSC_Zhu_2023.txt,
+pESC_Xiang,data/pESC_Xiang_2024/pESC_Xiang_2024.txt,
+pgEpiSC_Zhi,data/pgEpiSC_Zhi_2022/pgEpiSC_Zhi_2022.txt,
