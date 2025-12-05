@@ -326,18 +326,4 @@ All analyses use open-source software available via CRAN and Bioconductor.
 
 See session info in analysis reports for exact versions used.
 
----
-
-## References
-
-1. Love MI, Huber W, Anders S (2014). "Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2." Genome Biology.
-
-2. Zhu A, Ibrahim JG, Love MI (2019). "Heavy-tailed prior distributions for sequence count data: removing the noise and preserving large differences." Bioinformatics.
-
-3. Yu G, Wang LG, Han Y, He QY (2012). "clusterProfiler: an R package for comparing biological themes among gene clusters." OMICS.
-
-4. Wickham H (2016). "ggplot2: Elegant Graphics for Data Analysis." Springer-Verlag New York.
-
----
-
 **Last Updated:** December 2025
