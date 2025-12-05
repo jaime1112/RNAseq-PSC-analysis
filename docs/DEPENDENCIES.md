@@ -19,231 +19,113 @@ Download and install RStudio from: https://posit.co/download/rstudio-desktop/
 
 ## R Package Dependencies
 
-### Installation Script
+### Quick Installation
 
-Save and run the following script to install all dependencies:
+The easiest way to install all dependencies is to run the provided installation script:
 
 ```r
-# install_dependencies.R
+# From the project root directory
+source("install_dependencies.R")
+```
 
+### Manual Installation
+
+Alternatively, install packages manually in R console:
+
+```r
 # Install CRAN packages
-cran_packages <- c(
-  # Data manipulation
-  "tidyverse",      # Meta-package: dplyr, ggplot2, tidyr, readr, etc.
-  "writexl",        # Export to Excel format
+install.packages(c(
+  "tidyverse",
+  "readxl",
+  "writexl",
+  "ggplot2",
+  "ggrepel",
+  "ggpubr",
+  "pheatmap",
+  "RColorBrewer",
+  "VennDiagram",
+  "UpSetR",
+  "viridis",
+  "rstudioapi"
+))
 
-  # Visualization
-  "ggplot2",        # Grammar of graphics plotting
-  "ggrepel",        # Non-overlapping text labels
-  "gplots",         # Additional plotting tools
-  "vegan",          # Ecological statistics and visualization
-  "pheatmap",       # Pretty heatmaps
-  "RColorBrewer",   # Color palettes
-  "FactoMineR",     # Multivariate analysis
-  "ggpubr",         # Publication-ready plots
-  "ggsci",          # Scientific journal color palettes
-  "gghighlight",    # Highlight specific data in plots
-  "VennDiagram",    # Venn diagrams
-  "UpSetR",         # UpSet plots for set intersections
-  "viridis",        # Perceptually uniform color scales
-  "scico",          # Scientific color maps
-
-  # R Markdown
-  "knitr",          # Dynamic report generation
-  "rmarkdown"       # R Markdown document rendering
-)
-
-# Install CRAN packages
-install.packages(cran_packages)
-
-# Install Bioconductor
+# Install Bioconductor packages
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
-# Install Bioconductor packages
-bioc_packages <- c(
-  # Differential expression
-  "DESeq2",         # RNA-seq differential expression analysis
-  "tximport",       # Import transcript-level counts
-  "apeglm",         # Approximate posterior estimation for GLM
-
-  # Annotation
-  "org.Hs.eg.db",   # Human genome annotation
-  "org.Ss.eg.db",   # Pig genome annotation
-  "AnnotationDbi",  # Annotation database interface
-
-  # Enrichment analysis
-  "clusterProfiler", # GO/KEGG enrichment analysis
-  "enrichplot",      # Enrichment visualization
-  "DOSE",            # Disease ontology semantic and enrichment
-
-  # General Bioconductor utilities
-  "BiocGenerics",    # S4 generic functions
-  "S4Vectors"        # S4 vector classes
-)
-
-BiocManager::install(bioc_packages)
-
-# Verify installation
-cat("\\n=== Verifying Installation ===\\n")
-all_packages <- c(cran_packages, bioc_packages)
-installed <- sapply(all_packages, function(pkg) {
-  result <- require(pkg, character.only = TRUE, quietly = TRUE)
-  cat(sprintf("%-20s %s\\n", pkg, ifelse(result, "✓", "✗")))
-  return(result)
-})
-
-if (all(installed)) {
-  cat("\\n✓ All packages installed successfully!\\n")
-} else {
-  failed <- names(installed)[!installed]
-  cat("\\n✗ Failed to install:", paste(failed, collapse = ", "), "\\n")
-}
+BiocManager::install(c(
+  "DESeq2",
+  "org.Hs.eg.db",
+  "org.Ss.eg.db",
+  "AnnotationDbi",
+  "clusterProfiler",
+  "enrichplot"
+))
 ```
 
-### Core Dependencies
+## Required Packages
 
-| Package | Version | Purpose |
-|---------|---------|---------|
-| DESeq2 | ≥ 1.40.0 | Differential expression analysis |
-| apeglm | ≥ 1.22.0 | Log fold change shrinkage |
-| tidyverse | ≥ 2.0.0 | Data manipulation and visualization |
-| ggplot2 | ≥ 3.4.0 | Graphics and plotting |
-| pheatmap | ≥ 1.0.12 | Heatmap generation |
-| clusterProfiler | ≥ 4.8.0 | Enrichment analysis |
-| org.Hs.eg.db | ≥ 3.17.0 | Human gene annotations |
-| org.Ss.eg.db | ≥ 3.17.0 | Pig gene annotations |
+### CRAN Packages
 
-### Complete Dependency List
+| Package | Purpose | Where Used |
+|---------|---------|-----------|
+| **tidyverse** | Data manipulation and visualization meta-package (includes dplyr, purrr, ggplot2) | All scripts |
+| **readxl** | Read Excel files | run_heatmap.R, run_upset_venn.R |
+| **writexl** | Export to Excel format | All main scripts |
+| **ggplot2** | Grammar of graphics plotting (included in tidyverse) | Plotting utilities |
+| **ggrepel** | Non-overlapping text labels in plots | MA plots |
+| **ggpubr** | Publication-ready plots | MA plots, PCA |
+| **pheatmap** | Heatmap generation | Heatmaps |
+| **RColorBrewer** | Color palettes | Heatmaps |
+| **viridis** | Perceptually uniform color scales | Heatmaps |
+| **VennDiagram** | Venn diagram visualization | Gene set overlaps |
+| **UpSetR** | UpSet plot visualization for multi-way comparisons | Gene set overlaps |
+| **rstudioapi** | RStudio API for automatic path detection | All main scripts |
 
-#### CRAN Packages
+### Bioconductor Packages
 
-```r
-# Data Manipulation
-- tidyverse (2.0.0)
-- dplyr (1.1.0)
-- tidyr (1.3.0)
-- purrr (1.0.1)
-- readr (2.1.4)
+| Package | Purpose | Where Used |
+|---------|---------|-----------|
+| **DESeq2** | RNA-seq differential expression analysis | Core analysis |
+| **org.Hs.eg.db** | Human genome annotation database | Gene annotation, enrichment |
+| **org.Ss.eg.db** | Pig genome annotation database | Gene annotation, enrichment |
+| **AnnotationDbi** | Annotation database interface | Gene ID mapping |
+| **clusterProfiler** | GO and KEGG enrichment analysis | Pathway enrichment |
+| **enrichplot** | Enrichment result visualization | Enrichment plots |
 
-# Export
-- writexl (1.4.2)
+### Package Dependencies (Auto-installed)
 
-# Visualization - Core
-- ggplot2 (3.4.3)
-- ggrepel (0.9.3)
-- scales (1.2.1)
+The following packages are automatically installed as dependencies of the packages above:
 
-# Visualization - Specialized
-- gplots (3.1.3)
-- vegan (2.6-4)
-- pheatmap (1.0.12)
-- RColorBrewer (1.1-3)
-- viridis (0.6.3)
-- scico (1.5.0)
+- **SummarizedExperiment** - Dependency of DESeq2
+- **dplyr, purrr, readr, tidyr, stringr** - Included in tidyverse
+- **grid** - Base R graphics (used for Venn diagrams)
+- **stats** - Base R statistics
 
-# Visualization - Publication
-- ggpubr (0.6.0)
-- ggsci (3.0.0)
-- gghighlight (0.4.1)
+## Minimum Version Requirements
 
-# Set Visualization
-- VennDiagram (1.7.3)
-- UpSetR (1.4.0)
+| Package | Minimum Version |
+|---------|-----------------|
+| R | 4.2.0 |
+| DESeq2 | 1.40.0 |
+| tidyverse | 2.0.0 |
+| ggplot2 | 3.4.0 |
+| clusterProfiler | 4.8.0 |
+| org.Hs.eg.db | 3.17.0 |
+| org.Ss.eg.db | 3.17.0 |
 
-# Statistical Analysis
-- FactoMineR (2.8)
+## Installation Notes
 
-# Reporting
-- knitr (1.43)
-- rmarkdown (2.23)
-```
+### rstudioapi
 
-#### Bioconductor Packages
+The `rstudioapi` package is required for automatic working directory detection when running scripts in RStudio. If you only run scripts from the command line, this package is optional but recommended.
 
-```r
-# Core Bioconductor
-- BiocManager (1.30.21)
-- BiocGenerics (0.46.0)
-- S4Vectors (0.38.0)
+### Organism Databases
 
-# Differential Expression
-- DESeq2 (1.40.0)
-- tximport (1.28.0)
-- apeglm (1.22.0)
-- SummarizedExperiment (1.30.0)
+- **org.Hs.eg.db** - Required for human samples or cross-species comparisons (using human as reference)
+- **org.Ss.eg.db** - Required for pig-only analyses
 
-# Annotation
-- AnnotationDbi (1.62.0)
-- org.Hs.eg.db (3.17.0)
-- org.Ss.eg.db (3.17.0)
-
-# Enrichment
-- clusterProfiler (4.8.0)
-- enrichplot (1.20.0)
-- DOSE (3.26.0)
-- GO.db (3.17.0)
-- KEGGREST (1.40.0)
-```
-
-## Alternative: Using renv
-
-For reproducibility, consider using `renv` for package management:
-
-```r
-# Install renv
-install.packages("renv")
-
-# Initialize renv in project
-renv::init()
-
-# Install packages (from the script above)
-# ...
-
-# Create lockfile
-renv::snapshot()
-
-# On another machine, restore packages
-renv::restore()
-```
-
-The `renv.lock` file can be committed to version control for exact version reproducibility.
-
-## Docker Container (Optional)
-
-For maximum reproducibility, a Docker container can be created:
-
-```dockerfile
-# Dockerfile
-FROM rocker/tidyverse:4.3.1
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y \\
-    libcurl4-openssl-dev \\
-    libssl-dev \\
-    libxml2-dev \\
-    libpng-dev \\
-    libudunits2-dev \\
-    libgdal-dev
-
-# Install Bioconductor
-RUN R -e "install.packages('BiocManager')"
-
-# Install packages
-COPY install_dependencies.R /tmp/
-RUN Rscript /tmp/install_dependencies.R
-
-# Set working directory
-WORKDIR /workspace
-
-CMD ["R"]
-```
-
-Build and run:
-```bash
-docker build -t rnaseq-analysis .
-docker run -v $(pwd):/workspace -it rnaseq-analysis
-```
+If you only work with one organism, you can skip installing the other organism database.
 
 ## Troubleshooting
 
@@ -253,12 +135,17 @@ docker run -v $(pwd):/workspace -it rnaseq-analysis
 
 **Solution:** Install system dependencies (Ubuntu/Debian):
 ```bash
-sudo apt-get install -y \\
-  libcurl4-openssl-dev \\
-  libssl-dev \\
-  libxml2-dev \\
-  libpng-dev \\
+sudo apt-get install -y \
+  libcurl4-openssl-dev \
+  libssl-dev \
+  libxml2-dev \
+  libpng-dev \
   libudunits2-dev
+```
+
+**Solution:** macOS (using Homebrew):
+```bash
+brew install curl openssl libxml2 libpng udunits
 ```
 
 **Issue:** Bioconductor package version conflicts
@@ -270,34 +157,67 @@ BiocManager::install(ask = FALSE, update = TRUE)
 
 **Issue:** `org.Ss.eg.db` not available for current R version
 
-**Solution:** Install from source or use older Bioconductor release:
+**Solution:** Install from source or use BiocManager:
 ```r
 BiocManager::install("org.Ss.eg.db", force = TRUE)
+```
+
+**Issue:** tidyverse fails to install
+
+**Solution:** Install individual tidyverse packages:
+```r
+install.packages(c("dplyr", "tidyr", "purrr", "readr", "ggplot2", "stringr"))
 ```
 
 ### Getting Help
 
 - **Bioconductor Support:** https://support.bioconductor.org/
 - **Stack Overflow:** Tag questions with `[r]` and `[deseq2]`
-- **Package Documentation:** Use `?function_name` in R console
+- **Package Documentation:** Use `?function_name` or `help(package="package_name")` in R console
 
-## Version Information
+## Verifying Installation
 
-To document the exact versions used in your analysis:
+After installation, verify that all packages loaded successfully:
 
 ```r
-# Save session info
+# Test loading all packages
+packages <- c(
+  "tidyverse", "readxl", "writexl", "ggplot2", "ggrepel", "ggpubr",
+  "pheatmap", "RColorBrewer", "viridis", "VennDiagram", "UpSetR",
+  "rstudioapi", "DESeq2", "org.Hs.eg.db", "org.Ss.eg.db",
+  "AnnotationDbi", "clusterProfiler", "enrichplot"
+)
+
+all_loaded <- sapply(packages, function(pkg) {
+  result <- require(pkg, character.only = TRUE, quietly = TRUE)
+  cat(sprintf("%-25s %s\n", pkg, ifelse(result, "✓", "✗")))
+  return(result)
+})
+
+if (all(all_loaded)) {
+  cat("\n✓ All packages loaded successfully!\n")
+} else {
+  cat("\n✗ Some packages failed to load. Please reinstall them.\n")
+}
+```
+
+## Documenting Your Environment
+
+To ensure reproducibility, save your session information:
+
+```r
+# Save session info to file
 writeLines(capture.output(sessionInfo()), "sessionInfo.txt")
 
-# Or in R Markdown
+# Or view in console
 sessionInfo()
 ```
 
-This information should be included in all analysis reports.
+Include this file with your analysis results.
 
-## Updates
+## Updating Packages
 
-Packages are regularly updated. To update all packages:
+To update all packages to the latest versions:
 
 ```r
 # CRAN packages
@@ -307,7 +227,34 @@ update.packages(ask = FALSE)
 BiocManager::install(ask = FALSE, update = TRUE)
 ```
 
-**Note:** Major updates may introduce breaking changes. Test thoroughly after updating.
+**Note:** Major package updates may introduce breaking changes. Test your pipeline after updating.
+
+## Alternative Installation Methods
+
+### Using renv for Reproducibility
+
+For exact version reproducibility:
+
+```r
+# Install renv
+install.packages("renv")
+
+# Initialize renv in project
+renv::init()
+
+# Install packages (using methods above)
+# ...
+
+# Create lockfile
+renv::snapshot()
+
+# On another machine, restore exact versions
+renv::restore()
+```
+
+### Docker Container (Advanced)
+
+For maximum reproducibility, a Docker container can be created. See the main README for details.
 
 ---
 

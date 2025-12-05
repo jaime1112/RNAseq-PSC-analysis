@@ -43,20 +43,18 @@ version control)
 Open RStudio and run these commands in the Console:
 
 ``` r
-# Install rstudioapi (for RStudio integration)
-install.packages("rstudioapi")
+# Install CRAN packages
+install.packages(c("tidyverse", "readxl", "writexl", "ggplot2",
+                   "ggrepel", "ggpubr", "pheatmap", "viridis",
+                   "RColorBrewer", "VennDiagram", "UpSetR",
+                   "rstudioapi"))
 
 # Install Bioconductor packages
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 BiocManager::install(c("DESeq2", "org.Hs.eg.db", "org.Ss.eg.db",
-                       "clusterProfiler", "enrichplot"))
-
-# Install CRAN packages
-install.packages(c("tidyverse", "readxl", "writexl", "ggplot2",
-                   "ggrepel", "ggpubr", "pheatmap", "viridis",
-                   "RColorBrewer", "VennDiagram", "UpSetR"))
+                       "AnnotationDbi", "clusterProfiler", "enrichplot"))
 ```
 
 ------------------------------------------------------------------------

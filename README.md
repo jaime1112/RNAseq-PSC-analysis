@@ -106,9 +106,6 @@ This project investigates the transcriptional differences between porcine and hu
 Install required packages in RStudio Console:
 
 ```r
-# Install rstudioapi for RStudio integration
-install.packages("rstudioapi")
-
 # CRAN packages
 install.packages(c(
   "tidyverse",
@@ -121,7 +118,8 @@ install.packages(c(
   "RColorBrewer",
   "VennDiagram",
   "UpSetR",
-  "viridis"
+  "viridis",
+  "rstudioapi"
 ))
 
 # Bioconductor packages
@@ -132,6 +130,7 @@ BiocManager::install(c(
   "DESeq2",
   "org.Hs.eg.db",
   "org.Ss.eg.db",
+  "AnnotationDbi",
   "clusterProfiler",
   "enrichplot"
 ))

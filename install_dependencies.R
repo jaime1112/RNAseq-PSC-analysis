@@ -8,53 +8,48 @@ cat("===========================================\n\n")
 # Install CRAN packages
 cat("Installing CRAN packages...\n")
 cran_packages <- c(
-  # Data manipulation
-  "tidyverse",
-  "writexl",
+  # Data manipulation and file I/O
+  "tidyverse",      # Meta-package: dplyr, ggplot2, tidyr, readr, purrr, etc.
+  "readxl",         # Read Excel files
+  "writexl",        # Export to Excel format
 
-  # Visualization
-  "ggplot2",
-  "ggrepel",
-  "gplots",
-  "vegan",
-  "pheatmap",
-  "RColorBrewer",
-  "FactoMineR",
-  "ggpubr",
-  "ggsci",
-  "gghighlight",
-  "VennDiagram",
-  "UpSetR",
-  "viridis",
-  "scico",
+  # Visualization - Core
+  "ggplot2",        # Grammar of graphics plotting (also in tidyverse)
+  "ggrepel",        # Non-overlapping text labels
+  "ggpubr",         # Publication-ready plots
 
-  # R Markdown
-  "knitr",
-  "rmarkdown"
+  # Visualization - Heatmaps and color schemes
+  "pheatmap",       # Pretty heatmaps
+  "RColorBrewer",   # Color palettes
+  "viridis",        # Perceptually uniform color scales
+
+  # Set visualization
+  "VennDiagram",    # Venn diagrams
+  "UpSetR",         # UpSet plots for set intersections
+
+  # RStudio integration
+  "rstudioapi"      # RStudio API for path detection
 )
 
 install.packages(cran_packages, dependencies = TRUE)
 
 # Install Bioconductor
-cat("\nInstalling Bioconductor...\n")
+cat("\nInstalling Bioconductor packages...\n")
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 
 bioc_packages <- c(
   # Differential expression
-  "DESeq2",
-  "tximport",
-  "apeglm",
+  "DESeq2",           # RNA-seq differential expression analysis
 
-  # Annotation
-  "org.Hs.eg.db",
-  "org.Ss.eg.db",
-  "AnnotationDbi",
+  # Annotation databases
+  "org.Hs.eg.db",     # Human genome annotation
+  "org.Ss.eg.db",     # Pig genome annotation
+  "AnnotationDbi",    # Annotation database interface
 
   # Enrichment analysis
-  "clusterProfiler",
-  "enrichplot",
-  "DOSE"
+  "clusterProfiler",  # GO/KEGG enrichment analysis
+  "enrichplot"        # Enrichment visualization
 )
 
 BiocManager::install(bioc_packages, ask = FALSE)
