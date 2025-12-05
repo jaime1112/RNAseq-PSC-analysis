@@ -6,7 +6,7 @@
 
 This repository contains the bioinformatics analysis pipeline and code for comparative transcriptomic analysis of porcine and human pluripotent stem cells (PSCs), with a focus on WNT signaling pathway regulation.
 
-## Publication
+## Publication [Details Pending]
 
 **Title:** [Your Publication Title]
 
