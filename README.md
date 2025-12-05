@@ -248,7 +248,7 @@ Custom gene sets can be added in `config/` directory as tab-delimited text files
 
 ## Citation
 
-If you use this code or data, please cite:
+If you use this code or data, please cite: [PUBLICATION PENDING]
 
 ```bibtex
 @article{yourname2025,
