@@ -246,22 +246,6 @@ The pipeline includes predefined gene sets for WNT pathway analysis:
 
 Custom gene sets can be added in `config/` directory as tab-delimited text files.
 
-## Reproducibility
-
-### Software Versions
-
-All analyses were performed with the following software versions (example):
-
-```
-R version 4.3.1
-DESeq2 version 1.42.0
-ggplot2 version 3.4.3
-```
-
-### Random Seeds
-
-For analyses involving random processes (e.g., PCA layout), seeds are set for reproducibility.
-
 ## Citation
 
 If you use this code or data, please cite:
