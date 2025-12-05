@@ -275,6 +275,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Chu Laboratory members for experimental work
 - Data contributors (see Data Availability section)
 - Funding sources: [Funding agencies and grant numbers]
+- Claude Code used for code finalization.
 
 ## Contact
 
