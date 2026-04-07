@@ -18,17 +18,17 @@
 # ============================================
 
 # Analysis name (used for output directory)
-ANALYSIS_NAME <- "GroupA_vs_GroupB"
+ANALYSIS_NAME <- "pPSCall_vs_pFib"
 
 # Data configuration file
-DATA_CONFIG <- "config/data_sources_TEMPLATE.csv"
+DATA_CONFIG <- "config/data_sources_full.csv"
 
 # Sample metadata file
-METADATA_FILE <- "config/sample_metadata_TEMPLATE.txt"
+METADATA_FILE <- "config/sample_metadata_full.txt"
 
 # Experimental design
-BASELINE_LEVEL <- "GroupB"     # Reference group (must match FACTOR_NAME column values)
-COMPARISON_LEVEL <- "GroupA"   # Comparison group (must match FACTOR_NAME column values)
+BASELINE_LEVEL <- "pFib"     # Reference group (must match FACTOR_NAME column values)
+COMPARISON_LEVEL <- "pPSC"   # Comparison group (must match FACTOR_NAME column values)
 DESIGN_FORMULA <- "~CellType"  # DESeq2 design formula
 FACTOR_NAME <- "CellType"     # Factor to test (must match design formula)
 
@@ -40,8 +40,8 @@ FACTOR_NAME <- "CellType"     # Factor to test (must match design formula)
 ENRICHMENT_ORGANISM <- "human"
 
 # Analysis options
-PERFORM_ENRICHMENT <- TRUE    # Run GO/KEGG enrichment
-RUN_PATHWAY_ANALYSIS <- TRUE  # Filter pathway-specific genes
+PERFORM_ENRICHMENT <- FALSE    # Run GO/KEGG enrichment
+RUN_PATHWAY_ANALYSIS <- FALSE  # Filter pathway-specific genes
 
 # Output directory
 OUTPUT_DIR <- "figures"
@@ -143,8 +143,11 @@ rld <- variance_stabilize(dds)
 # ============================================
 cat("\n=== Step 4: Generating PCA Plots ===\n")
 
-generate_pca_plot(rld, file.path(analysis_dir, paste0("PCA_by_", FACTOR_NAME, ".pdf")), intgroup = FACTOR_NAME)
-generate_pca_plot(rld, file.path(analysis_dir, "PCA_by_Dataset.pdf"), intgroup = "Dataset")
+metadata_cols <- colnames(SummarizedExperiment::colData(rld))
+metadata_cols <- setdiff(metadata_cols, c("sizeFactor", "replaceable"))
+for (col in metadata_cols) {
+  generate_pca_plot(rld, file.path(analysis_dir, paste0("PCA_by_", col, ".pdf")), intgroup = col)
+}
 generate_correlation_heatmap(rld, file.path(analysis_dir, "sample_correlation_heatmap.pdf"))
 
 # ============================================
