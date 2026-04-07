@@ -8,8 +8,8 @@
 #' @return Data frame with processed gene counts
 process_dataset <- function(filepath, remove_pattern = NULL) {
 
-  # Read in the data
-  df <- read.table(filepath, header = TRUE, sep = "\t")
+  # Read in the data (check.names=FALSE preserves original column names with spaces/parens)
+  df <- read.table(filepath, header = TRUE, sep = "\t", check.names = FALSE)
 
   # Optionally remove rows whose GeneID matches the remove_pattern
   if (!is.null(remove_pattern)) {

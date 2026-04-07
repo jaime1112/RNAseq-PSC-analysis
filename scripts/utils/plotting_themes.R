@@ -187,10 +187,17 @@ generate_ma_plot_labeled <- function(res_df, output_file, title, highlight_genes
 #' @param height Plot height in inches (default: 8)
 generate_correlation_heatmap <- function(rld, output_file,
                                          method = "pearson",
-                                         width = 10, height = 8) {
+                                         width = NULL, height = NULL) {
 
   # Compute sample-sample correlation matrix
   sample_cor <- cor(SummarizedExperiment::assay(rld), method = method)
+  n_samples <- ncol(sample_cor)
+
+  # Scale dimensions and font size to sample count
+  cellsize <- 12
+  if (is.null(width))  width  <- max(10, n_samples * cellsize / 72 + 4)
+  if (is.null(height)) height <- max(8,  n_samples * cellsize / 72 + 4)
+  fontsize_labels <- max(5, min(8, 200 / n_samples))
 
   # Prepare metadata annotations — use all available metadata columns
   metadata <- as.data.frame(SummarizedExperiment::colData(rld))
@@ -234,8 +241,10 @@ generate_correlation_heatmap <- function(rld, output_file,
     clustering_method = "ward.D2",
     show_rownames = TRUE,
     show_colnames = TRUE,
-    fontsize_row = 8,
-    fontsize_col = 8,
+    cellwidth = cellsize,
+    cellheight = cellsize,
+    fontsize_row = fontsize_labels,
+    fontsize_col = fontsize_labels,
     border_color = NA,
     main = paste("Sample Correlation (", method, ")", sep = ""),
     annotation_col = annotation_df,

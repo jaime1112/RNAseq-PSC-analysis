@@ -21,10 +21,10 @@
 ANALYSIS_NAME <- "GroupA_vs_GroupB"
 
 # Data configuration file
-DATA_CONFIG <- "config/data_sources.csv"
+DATA_CONFIG <- "config/data_sources_TEMPLATE.csv"
 
 # Sample metadata file
-METADATA_FILE <- "config/sample_metadata.txt"
+METADATA_FILE <- "config/sample_metadata_TEMPLATE.txt"
 
 # Experimental design
 BASELINE_LEVEL <- "GroupB"     # Reference group (must match FACTOR_NAME column values)
@@ -41,7 +41,7 @@ ENRICHMENT_ORGANISM <- "human"
 
 # Analysis options
 PERFORM_ENRICHMENT <- TRUE    # Run GO/KEGG enrichment
-RUN_PATHWAY_ANALYSIS <-TRUE  # Filter pathway-specific genes
+RUN_PATHWAY_ANALYSIS <- TRUE  # Filter pathway-specific genes
 
 # Output directory
 OUTPUT_DIR <- "figures"

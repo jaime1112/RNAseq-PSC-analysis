@@ -41,7 +41,9 @@ RNAseq/
 ├── config/                            # Configuration files
 │   ├── data_sources_TEMPLATE.csv      # Dataset sources template
 │   ├── sample_metadata_TEMPLATE.txt   # Sample metadata template
-│   └── WntSignalingPathway.txt        # WNT pathway gene lists
+│   ├── WntSignalingPathway.txt        # WNT pathway gene list
+│   ├── PositiveRegulationOfWntSignalingPathway.txt  # Positive WNT regulators
+│   └── NegativeRegulationOfWntSignalingPathway.txt  # Negative WNT regulators
 │
 ├── data/                              # Data directory (not tracked)
 │   ├── README.md                      # Data availability information
