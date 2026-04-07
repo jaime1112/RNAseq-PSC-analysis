@@ -44,6 +44,8 @@ data/*
 !config/*.txt
 # User-specific config files (use TEMPLATE versions as starting point)
 config/*_full.*
+# Local working copies of scripts (use main versions as starting point)
+*_local.R
 
 # Temporary files
 *.log

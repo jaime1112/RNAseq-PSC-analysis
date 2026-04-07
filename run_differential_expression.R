@@ -18,17 +18,17 @@
 # ============================================
 
 # Analysis name (used for output directory)
-ANALYSIS_NAME <- "pPSCall_vs_pFib"
+ANALYSIS_NAME <- "GroupA_vs_GroupB"
 
 # Data configuration file
-DATA_CONFIG <- "config/data_sources_full.csv"
+DATA_CONFIG <- "config/data_sources_TEMPLATE.csv"
 
 # Sample metadata file
-METADATA_FILE <- "config/sample_metadata_full.txt"
+METADATA_FILE <- "config/sample_metadata_TEMPLATE.txt"
 
 # Experimental design
-BASELINE_LEVEL <- "pFib"     # Reference group (must match FACTOR_NAME column values)
-COMPARISON_LEVEL <- "pPSC"   # Comparison group (must match FACTOR_NAME column values)
+BASELINE_LEVEL <- "GroupB"     # Reference group (must match FACTOR_NAME column values)
+COMPARISON_LEVEL <- "GroupA"   # Comparison group (must match FACTOR_NAME column values)
 DESIGN_FORMULA <- "~CellType"  # DESeq2 design formula
 FACTOR_NAME <- "CellType"     # Factor to test (must match design formula)
 
@@ -40,8 +40,8 @@ FACTOR_NAME <- "CellType"     # Factor to test (must match design formula)
 ENRICHMENT_ORGANISM <- "human"
 
 # Analysis options
-PERFORM_ENRICHMENT <- FALSE    # Run GO/KEGG enrichment
-RUN_PATHWAY_ANALYSIS <- FALSE  # Filter pathway-specific genes
+PERFORM_ENRICHMENT <- TRUE    # Run GO/KEGG enrichment
+RUN_PATHWAY_ANALYSIS <- TRUE  # Filter pathway-specific genes
 
 # Output directory
 OUTPUT_DIR <- "figures"
