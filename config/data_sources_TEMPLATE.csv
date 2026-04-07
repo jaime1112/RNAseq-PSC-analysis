@@ -1,0 +1,4 @@
+dataset_name,filepath,remove_pattern
+Dataset1,data/Dataset1/counts.txt,
+Dataset2,data/Dataset2/counts.txt,
+Dataset3,data/Dataset3/counts.txt,^ENSSSCG

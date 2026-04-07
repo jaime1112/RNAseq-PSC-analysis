@@ -1,0 +1,10 @@
+Sample	CellType	Dataset
+Sample1_rep1	GroupA	Dataset1
+Sample1_rep2	GroupA	Dataset1
+Sample1_rep3	GroupA	Dataset1
+Sample2_rep1	GroupA	Dataset2
+Sample2_rep2	GroupA	Dataset2
+Sample2_rep3	GroupA	Dataset2
+Sample3_rep1	GroupB	Dataset1
+Sample3_rep2	GroupB	Dataset1
+Sample3_rep3	GroupB	Dataset1
