@@ -251,7 +251,7 @@ gene_lists_down <- load_de_gene_lists(
 )
 
 # Method B: From single analysis with categories
-# (see run_upset_venn.R for implementation)
+# (see run_upset_venn.Rmd for implementation)
 
 # === 3. VISUALIZE OVERLAPS ===
 # UpSet plot
@@ -546,8 +546,8 @@ A typical multi-comparison workflow creates:
 ## Implementation Scripts
 
 The workflows described in this document are implemented in the main pipeline scripts:
-- `run_upset_venn.R` - For gene set overlap analysis (UpSet plots and Venn diagrams)
-- `run_heatmap.R` - For flexible heatmap generation with gene/sample filtering
+- `run_upset_venn.Rmd` - For gene set overlap analysis (UpSet plots and Venn diagrams)
+- `run_heatmap.Rmd` - For flexible heatmap generation with gene/sample filtering
 
 Refer to the main [README.md](../README.md) for usage instructions.
 

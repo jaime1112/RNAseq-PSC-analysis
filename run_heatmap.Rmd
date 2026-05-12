@@ -1,0 +1,167 @@
+---
+title: "Heatmap Generator"
+author: "Chu Lab"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = TRUE,
+  fig.width = 10, fig.height = 8
+)
+```
+
+# Overview
+
+Build a single heatmap with flexible gene and sample selection from a
+DESeq2-normalized count matrix (i.e. the `normalized_counts.xlsx` that
+`run_differential_expression.Rmd` writes out).
+
+You pick exactly **one** gene-selection method:
+
+1. **All genes** (`USE_ALL_GENES`) — only useful for very small matrices.
+2. **Pathway file** (`USE_PATHWAY_GENES`) — e.g. `config/WntSignalingPathway.txt`.
+3. **External gene list file** (`USE_GENE_LIST_FILE`) — one gene per line.
+4. **Inline custom vector** (`USE_CUSTOM_GENES`) — quick ad-hoc plots.
+
+Samples can optionally be subset by metadata column (`SAMPLE_CRITERIA`).
+
+# 1. Parameters
+
+```{r parameters}
+ANALYSIS_NAME <- "my_heatmap"
+OUTPUT_DIR    <- "figures"
+
+# ---- Inputs --------------------------------------------------------
+COUNTS_FILE   <- "figures/my_analysis/normalized_counts.xlsx"
+METADATA_FILE <- "config/sample_metadata.txt"
+
+# ---- Gene selection (set exactly one to TRUE) ----------------------
+USE_ALL_GENES       <- FALSE
+USE_PATHWAY_GENES   <- TRUE
+USE_GENE_LIST_FILE  <- FALSE
+USE_CUSTOM_GENES    <- FALSE
+
+PATHWAY_FILE   <- "config/WntSignalingPathway.txt"
+GENE_LIST_FILE <- "path/to/gene_list.txt"
+CUSTOM_GENES   <- c("WNT1", "WNT3A", "CTNNB1", "AXIN2")
+
+# ---- Sample selection ---------------------------------------------
+# NULL = use all samples. Otherwise a named list of column -> allowed values:
+#   list(CellType = "GroupA")
+#   list(Dataset  = c("Dataset1", "Dataset2"))
+SAMPLE_CRITERIA <- NULL
+
+# ---- Heatmap parameters -------------------------------------------
+CLUSTER_ROWS    <- TRUE
+CLUSTER_COLS    <- FALSE
+COLOR_SCHEME    <- "viridis"           # "viridis" / "blue_red" / "blue_yellow"
+SCALE_METHOD    <- "row"               # "0to1" / "row" (z-score) / "column" / "none"
+ANNOTATION_COLS <- c("CellType", "Dataset")
+
+PLOT_WIDTH  <- 12
+PLOT_HEIGHT <- 10
+```
+
+# 2. Setup
+
+```{r setup-environment}
+suppressPackageStartupMessages({
+  library("tidyverse")
+  library("readxl")
+  library("pheatmap")
+  library("viridis")
+  library("RColorBrewer")
+})
+
+source("scripts/utils/heatmap_helpers.R")
+source("scripts/utils/gene_set_operations.R")
+
+dir.create(OUTPUT_DIR, showWarnings = FALSE, recursive = TRUE)
+```
+
+# 3. Load counts and metadata
+
+```{r load-data}
+counts   <- load_normalized_counts(COUNTS_FILE)
+metadata <- read.table(METADATA_FILE,
+                       header = TRUE, sep = "\t",
+                       row.names = 1, stringsAsFactors = FALSE)
+cat("Loaded metadata for", nrow(metadata), "samples\n")
+```
+
+# 4. Select genes
+
+The four flags are checked in order; the first `TRUE` wins.
+
+```{r select-genes}
+if (USE_ALL_GENES) {
+  gene_list <- NULL
+  cat("Using all genes\n")
+
+} else if (USE_PATHWAY_GENES && file.exists(PATHWAY_FILE)) {
+  gene_list <- load_pathway_genes(PATHWAY_FILE)
+  cat("Using pathway genes:", length(gene_list), "\n")
+
+} else if (USE_GENE_LIST_FILE && file.exists(GENE_LIST_FILE)) {
+  gene_list <- read.table(GENE_LIST_FILE, stringsAsFactors = FALSE)[[1]]
+  cat("Loaded gene list from file:", length(gene_list), "genes\n")
+
+} else if (USE_CUSTOM_GENES) {
+  gene_list <- CUSTOM_GENES
+  cat("Using custom gene list:", length(gene_list), "genes\n")
+
+} else {
+  stop("No valid gene-selection method enabled. Set exactly one USE_* flag to TRUE.")
+}
+```
+
+# 5. Select samples
+
+```{r select-samples}
+if (!is.null(SAMPLE_CRITERIA)) {
+  sample_list <- get_samples_by_criteria(metadata, SAMPLE_CRITERIA)
+} else {
+  sample_list <- NULL
+  cat("Using all samples\n")
+}
+```
+
+# 6. Generate the heatmap
+
+Renders to the Plots pane and writes a PDF to `OUTPUT_DIR/ANALYSIS_NAME.pdf`.
+
+- `SCALE_METHOD = "row"` (z-score per gene) is the typical choice for comparing
+  expression patterns across samples; `"0to1"` is better when you want absolute
+  values bounded.
+- Turn `CLUSTER_COLS` to `TRUE` to let samples self-cluster — useful for QC,
+  less so when you want to enforce a specific ordering.
+
+```{r heatmap}
+output_file <- file.path(OUTPUT_DIR, paste0(ANALYSIS_NAME, ".pdf"))
+
+generate_flexible_heatmap(
+  count_data     = counts,
+  gene_list      = gene_list,
+  sample_list    = sample_list,
+  metadata       = metadata,
+  output_file    = output_file,
+  title          = ANALYSIS_NAME,
+  cluster_rows   = CLUSTER_ROWS,
+  cluster_cols   = CLUSTER_COLS,
+  color_scheme   = COLOR_SCHEME,
+  scale_method   = SCALE_METHOD,
+  annotation_col = ANNOTATION_COLS,
+  width          = PLOT_WIDTH,
+  height         = PLOT_HEIGHT
+)
+
+cat("Heatmap PDF saved to:", output_file, "\n")
+```

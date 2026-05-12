@@ -1,6 +1,30 @@
 # Plotting Functions and Themes
 # Standardized visualization functions for RNAseq analysis
 
+#' Render a captured plot to the active screen device (RStudio Plots pane)
+#'
+#' Called after dev.off() closes a PDF device. In interactive RStudio sessions,
+#' the previous device (RStudioGD) becomes active and the plot is shown in the
+#' Plots pane. In non-interactive runs (Rscript) this is a silent no-op so we
+#' do not open unwanted X11/quartz windows.
+#'
+#' @param plot_obj A ggplot, pheatmap, UpSetR or printable plot object. If NULL,
+#'   draw_fn is used instead.
+#' @param draw_fn  Optional zero-arg function that draws to the current device
+#'   (used for grid-based plots like Venn diagrams).
+.display_on_screen <- function(plot_obj = NULL, draw_fn = NULL) {
+  if (!interactive()) return(invisible(NULL))
+  try({
+    if (!is.null(draw_fn)) {
+      grid::grid.newpage()
+      draw_fn()
+    } else if (!is.null(plot_obj)) {
+      print(plot_obj)
+    }
+  }, silent = TRUE)
+  invisible(NULL)
+}
+
 #' Generate PCA plot and save to PDF
 #'
 #' @param rld Variance-stabilized data object
@@ -19,6 +43,9 @@ generate_pca_plot <- function(rld, output_file, intgroup = "CellType", width = 8
 
   # Close device
   dev.off()
+
+  # Also display in RStudio Plots pane during interactive runs
+  .display_on_screen(pca_plot)
 
   message(paste("PCA plot saved to:", output_file))
 }
@@ -59,6 +86,7 @@ generate_ma_plot <- function(res_df, output_file, title, highlight_genes = NULL,
       ggtheme = ggpubr::theme_pubr()
     )
     print(maplot)
+    final_plot <- maplot
 
   } else {
     # MA plot with specific highlighted genes
@@ -99,9 +127,12 @@ generate_ma_plot <- function(res_df, output_file, title, highlight_genes = NULL,
       )
 
     print(maplot_with_points)
+    final_plot <- maplot_with_points
   }
 
   dev.off()
+
+  .display_on_screen(final_plot)
 
   message(paste("MA plot saved to:", output_file))
 }
@@ -174,6 +205,8 @@ generate_ma_plot_labeled <- function(res_df, output_file, title, highlight_genes
   print(labeled_plot)
   dev.off()
 
+  .display_on_screen(labeled_plot)
+
   message(paste("Labeled MA plot saved to:", output_file))
 }
 
@@ -233,7 +266,7 @@ generate_correlation_heatmap <- function(rld, output_file,
 
   pdf(file = output_file, width = width, height = height)
 
-  pheatmap::pheatmap(
+  cor_heatmap <- pheatmap::pheatmap(
     mat = sample_cor,
     color = colors,
     clustering_distance_rows = as.dist(1 - sample_cor),
@@ -255,6 +288,8 @@ generate_correlation_heatmap <- function(rld, output_file,
   )
 
   dev.off()
+
+  .display_on_screen(draw_fn = function() grid::grid.draw(cor_heatmap$gtable))
 
   # Export correlation matrix to Excel
   cor_df <- as.data.frame(sample_cor)

@@ -160,6 +160,13 @@ generate_flexible_heatmap <- function(count_data, gene_list = NULL, sample_list 
   print(heatmap_plot)
   dev.off()
 
+  if (interactive()) {
+    try({
+      grid::grid.newpage()
+      grid::grid.draw(heatmap_plot$gtable)
+    }, silent = TRUE)
+  }
+
   message(paste("Heatmap saved to:", output_file))
   message(paste("Dimensions:", nrow(scaled_data), "genes x", ncol(scaled_data), "samples"))
 

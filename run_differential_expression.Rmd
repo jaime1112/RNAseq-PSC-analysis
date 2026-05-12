@@ -1,0 +1,305 @@
+---
+title: "Differential Expression Analysis Pipeline"
+author: "Chu Lab"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = TRUE,
+  fig.width = 8, fig.height = 6
+)
+```
+
+# Overview
+
+End-to-end DESeq2 pipeline for a single pairwise contrast. Each chunk maps to a
+discrete analytical step so you can step through the analysis interactively
+(`Ctrl/Cmd-Shift-Enter` to run a chunk; `Ctrl/Cmd-Alt-N` for next chunk) and
+inspect the intermediate objects/plots in RStudio as you go.
+
+**Workflow:**
+
+1. Set parameters
+2. Load utility functions and libraries
+3. Load + merge count data
+4. Build the `DESeqDataSet`
+5. Run DESeq2 + variance stabilization
+6. PCA + sample correlation QC
+7. Extract + annotate results
+8. MA plots (overall + pathway-specific)
+9. (Optional) GO/KEGG enrichment
+10. (Optional) WNT pathway gene export
+
+> **Working directory:** RStudio chunks run with the working directory set to this
+> file's location. If you opened the RStudio Project at the repo root that is
+> already correct. Confirm with `getwd()` if relative paths fail.
+
+# 1. Parameters
+
+Edit values here, then run the chunk. Everything downstream reads these.
+
+```{r parameters}
+# Analysis name (used for output directory under figures/)
+ANALYSIS_NAME       <- "GroupA_vs_GroupB"
+
+# Inputs
+DATA_CONFIG         <- "config/data_sources_TEMPLATE.csv"
+METADATA_FILE       <- "config/sample_metadata_TEMPLATE.txt"
+
+# Experimental design
+FACTOR_NAME         <- "CellType"    # column in metadata
+BASELINE_LEVEL      <- "GroupB"      # reference
+COMPARISON_LEVEL    <- "GroupA"      # test group
+DESIGN_FORMULA      <- "~CellType"   # DESeq2 design
+
+# Organism — used for Entrez mapping + enrichment
+#   "human" / "Hs" / "hsa"   OR   "pig" / "Ss" / "ssc"
+# Human DBs are far better annotated; pick "human" unless your gene symbols are
+# strictly pig-specific. See docs/ORGANISM_SELECTION.md for details.
+ENRICHMENT_ORGANISM <- "human"
+
+# Optional steps
+PERFORM_ENRICHMENT   <- TRUE   # run GO + KEGG
+RUN_PATHWAY_ANALYSIS <- TRUE   # export WNT pathway subset
+
+# Output
+OUTPUT_DIR <- "figures"
+```
+
+# 2. Setup — libraries, utilities, output directory
+
+The chunk below loads packages and sources every helper file under
+`scripts/utils/`. If a package is missing, install it per the README's
+"Installation" section before continuing.
+
+```{r setup-environment}
+suppressPackageStartupMessages({
+  library("tidyverse")
+  library("DESeq2")
+  library("writexl")
+  library("ggplot2")
+  library("ggrepel")
+  library("ggpubr")
+  library("org.Hs.eg.db")
+  library("org.Ss.eg.db")
+  library("pheatmap")
+  library("RColorBrewer")
+  if (PERFORM_ENRICHMENT) {
+    library("clusterProfiler")
+    library("enrichplot")
+  }
+})
+
+source("scripts/utils/data_processing.R")
+source("scripts/utils/deseq_helpers.R")
+source("scripts/utils/plotting_themes.R")
+if (PERFORM_ENRICHMENT) {
+  source("scripts/utils/enrichment_analysis.R")
+}
+
+analysis_dir <- file.path(OUTPUT_DIR, ANALYSIS_NAME)
+dir.create(analysis_dir, showWarnings = FALSE, recursive = TRUE)
+
+cat("Analysis:", ANALYSIS_NAME, "\n",
+    "Comparison:", COMPARISON_LEVEL, "vs", BASELINE_LEVEL, "\n",
+    "Output dir:", analysis_dir, "\n", sep = " ")
+```
+
+# 3. Load and merge datasets
+
+Each row of `DATA_CONFIG` is one count file plus (optionally) a regex of
+columns to drop (e.g. to strip a species suffix). After per-dataset
+processing, datasets are merged on shared gene symbols.
+
+```{r load-data}
+data_config <- read.csv(DATA_CONFIG, stringsAsFactors = FALSE)
+cat("Loading", nrow(data_config), "datasets\n")
+
+dataset_list <- list()
+for (i in seq_len(nrow(data_config))) {
+  dataset_name <- data_config$dataset_name[i]
+  filepath     <- data_config$filepath[i]
+  remove_pat   <- data_config$remove_pattern[i]
+  if (is.na(remove_pat) || remove_pat == "") remove_pat <- NULL
+
+  cat("  -", dataset_name, "\n")
+  dataset_list[[dataset_name]] <- process_dataset(filepath, remove_pattern = remove_pat)
+}
+
+merged_data  <- merge_datasets(dataset_list)
+count_matrix <- prepare_count_matrix(merged_data)
+cat("Final matrix:", nrow(count_matrix), "genes x", ncol(count_matrix), "samples\n")
+```
+
+# 4. Build the DESeqDataSet
+
+The metadata file's rows must match `colnames(count_matrix)`. `set_factor_levels`
+forces the reference level so the contrast direction is what you expect.
+
+```{r build-dds}
+dds <- create_deseq_dataset(count_matrix, METADATA_FILE, design_formula = DESIGN_FORMULA)
+dds <- set_factor_levels(dds, FACTOR_NAME, c(BASELINE_LEVEL, COMPARISON_LEVEL))
+dds
+```
+
+# 5. Run DESeq2 and variance stabilization
+
+`run_deseq_analysis()` estimates size factors, dispersion, and fits the GLM.
+`variance_stabilize()` returns a `vst()`-transformed object used for PCA + QC.
+
+```{r run-deseq}
+dds <- run_deseq_analysis(dds)
+rld <- variance_stabilize(dds)
+```
+
+# 6. PCA and sample-correlation QC
+
+A PCA is generated for every metadata column (so you can spot clustering by
+batch, dataset, sex, etc.) and a sample correlation heatmap is exported with
+its matrix. Figures display in the Plots pane and are saved as PDFs.
+
+```{r qc-plots}
+metadata_cols <- colnames(SummarizedExperiment::colData(rld))
+metadata_cols <- setdiff(metadata_cols, c("sizeFactor", "replaceable"))
+
+for (col in metadata_cols) {
+  generate_pca_plot(rld,
+                    file.path(analysis_dir, paste0("PCA_by_", col, ".pdf")),
+                    intgroup = col)
+}
+
+generate_correlation_heatmap(rld,
+                             file.path(analysis_dir, "sample_correlation_heatmap.pdf"))
+```
+
+# 7. Extract and annotate results
+
+The Wald-test result is passed through `apeglm` LFC shrinkage, then annotated
+with gene symbols + Entrez IDs for downstream enrichment. Significant hits
+are written to a separate Excel file for convenience.
+
+```{r results}
+contrast_name <- paste0(FACTOR_NAME, "_",
+                        make.names(COMPARISON_LEVEL), "_vs_",
+                        make.names(BASELINE_LEVEL))
+res <- results(dds,
+               contrast = c(FACTOR_NAME, COMPARISON_LEVEL, BASELINE_LEVEL),
+               alpha = 0.05)
+res <- DESeq2::lfcShrink(dds, coef = contrast_name, type = "apeglm")
+
+gene_symbols <- rownames(count_matrix)
+res    <- annotate_results(res, gene_symbols, organism = ENRICHMENT_ORGANISM)
+res    <- merge_counts_with_results(res, dds)
+res_df <- as.data.frame(res)
+
+cat("Significant genes (padj < 0.05):",
+    sum(res_df$padj < 0.05, na.rm = TRUE), "\n")
+
+write_xlsx(res_df,                         file.path(analysis_dir, "allGenes.xlsx"))
+write_xlsx(filter_significant_genes(res_df), file.path(analysis_dir, "sigGenes.xlsx"))
+
+nm_counts_df <- as.data.frame(counts(dds, normalized = TRUE))
+nm_counts_df <- cbind("GeneID" = rownames(nm_counts_df), nm_counts_df)
+rownames(nm_counts_df) <- NULL
+write_xlsx(nm_counts_df, file.path(analysis_dir, "normalized_counts.xlsx"))
+```
+
+# 8. MA plots
+
+One generic MA plot plus four pathway-highlighted variants (WNT ligands, WNT
+receptors, pluripotency markers, broader WNT-linked set). The labeled plot uses
+`ggrepel` for non-overlapping labels and is best for figures.
+
+```{r ma-plots}
+gene_sets <- get_gene_sets()
+
+generate_ma_plot(res_df,
+                 file.path(analysis_dir, "MAplot.pdf"),
+                 title = paste(COMPARISON_LEVEL, "vs", BASELINE_LEVEL),
+                 top = 20)
+
+generate_ma_plot(res_df,
+                 file.path(analysis_dir, "MAplot_WNTligands.pdf"),
+                 title = "WNT Ligands",
+                 highlight_genes = gene_sets$wnt_ligands)
+
+generate_ma_plot(res_df,
+                 file.path(analysis_dir, "MAplot_WNTreceptors.pdf"),
+                 title = "WNT Receptors",
+                 highlight_genes = gene_sets$wnt_receptors)
+
+generate_ma_plot(res_df,
+                 file.path(analysis_dir, "MAplot_Pluripotency.pdf"),
+                 title = "Pluripotency Genes",
+                 highlight_genes = gene_sets$pluripotency)
+
+generate_ma_plot_labeled(res_df,
+                         file.path(analysis_dir, "MAplot_WNTlinked.pdf"),
+                         title = "WNT Pathway Genes",
+                         highlight_genes = gene_sets$wnt_linked)
+```
+
+# 9. Enrichment analysis (optional)
+
+`compareCluster` is run separately on Up- and Down-regulated genes (LFC > 1,
+padj < 0.05) for GO/BP and KEGG. If a category has no enriched terms the
+pipeline logs a message and skips the corresponding output instead of crashing.
+
+```{r enrichment, eval=PERFORM_ENRICHMENT}
+gene_lists <- get_regulated_genes(res_df, lfc_cutoff = 1, padj_cutoff = 0.05)
+cat("Upregulated:",   length(gene_lists$Upregulated),   "\n")
+cat("Downregulated:", length(gene_lists$Downregulated), "\n")
+
+enrichment_results <- run_enrichment_analysis(
+  gene_lists = gene_lists,
+  universe   = res_df$entrezid,
+  organism   = ENRICHMENT_ORGANISM,
+  ontology   = "BP"
+)
+
+if (!is.null(enrichment_results$GO)) {
+  write_xlsx(enrichment_results$GO@compareClusterResult,
+             file.path(analysis_dir, "GO_combined.xlsx"))
+}
+if (!is.null(enrichment_results$KEGG)) {
+  write_xlsx(enrichment_results$KEGG@compareClusterResult,
+             file.path(analysis_dir, "KEGG_combined.xlsx"))
+}
+
+generate_enrichment_dotplot(enrichment_results$GO,
+                            file.path(analysis_dir, "GO_dotplot.pdf"),
+                            title = "GO Enrichment")
+generate_enrichment_dotplot(enrichment_results$KEGG,
+                            file.path(analysis_dir, "KEGG_dotplot.pdf"),
+                            title = "KEGG Enrichment")
+```
+
+# 10. WNT pathway gene export (optional)
+
+Filters `res_df` to the canonical WNT signaling gene list and writes it out
+for downstream pathway-focused figures (e.g. the heatmap script).
+
+```{r pathway-export, eval=RUN_PATHWAY_ANALYSIS}
+wnt_file <- "config/WntSignalingPathway.txt"
+if (file.exists(wnt_file)) {
+  wnt_results <- filter_pathway_genes(wnt_file, res_df, gene_col = "GeneID")
+  write_xlsx(wnt_results, file.path(analysis_dir, "WntGenes.xlsx"))
+  cat("WNT pathway genes exported\n")
+}
+```
+
+# Outputs
+
+```{r summary, echo=FALSE, results='asis'}
+files <- list.files(analysis_dir, full.names = FALSE)
+cat("**Files in `", analysis_dir, "`:**\n\n", sep = "")
+cat(paste0("- `", files, "`"), sep = "\n")
+```

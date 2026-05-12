@@ -164,6 +164,8 @@ generate_upset_plot <- function(gene_lists, output_file, title = "Gene Set Overl
   print(upset_plot)
   dev.off()
 
+  if (interactive()) try(print(upset_plot), silent = TRUE)
+
   message(paste("UpSet plot saved to:", output_file))
   return(invisible(output_file))
 }
@@ -215,17 +217,29 @@ generate_venn_diagram <- function(gene_lists, output_file, title = NULL,
     margin = 0.1
   )
 
+  # Closure to redraw the venn (optionally with title) on the current device
+  draw_venn <- function() {
+    if (!is.null(title)) {
+      grid::grid.newpage()
+      grid::pushViewport(grid::viewport(layout = grid::grid.layout(
+        nrow = 2, ncol = 1, heights = grid::unit(c(1, 10), "null"))))
+      grid::grid.text(title,
+                      vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 1),
+                      gp = grid::gpar(fontsize = 16, fontface = "bold"))
+      grid::grid.draw(venn_plot)
+    } else {
+      grid::grid.draw(venn_plot)
+    }
+  }
+
   # Save to PDF
   pdf(file = output_file, width = width, height = height)
-  if (!is.null(title)) {
-    grid::grid.newpage()
-    grid::pushViewport(grid::viewport(layout = grid::grid.layout(nrow = 2, ncol = 1, heights = grid::unit(c(1, 10), "null"))))
-    grid::grid.text(title, vp = grid::viewport(layout.pos.row = 1, layout.pos.col = 1), gp = grid::gpar(fontsize = 16, fontface = "bold"))
-    grid::grid.draw(venn_plot)
-  } else {
-    grid::grid.draw(venn_plot)
-  }
+  draw_venn()
   dev.off()
+
+  if (interactive()) {
+    try({ grid::grid.newpage(); draw_venn() }, silent = TRUE)
+  }
 
   message(paste("Venn diagram saved to:", output_file))
   return(invisible(output_file))

@@ -25,9 +25,11 @@ RNAseq/
 ├── LICENSE                             # MIT License
 ├── .gitignore                          # Git ignore rules
 │
-├── run_differential_expression.R      # Main DE analysis script
-├── run_upset_venn.R                   # UpSet plot and Venn diagram generator
-├── run_heatmap.R                      # Heatmap generator
+├── run_differential_expression.Rmd        # Main DE analysis (annotated notebook)
+├── run_differential_expression_local.Rmd  # Working copy (edit freely)
+├── run_upset_venn.Rmd                     # UpSet plot and Venn diagram generator
+├── run_heatmap.Rmd                        # Heatmap generator
+├── install_dependencies.R                 # One-shot package installer
 │
 ├── scripts/
 │   └── utils/                         # Shared utility functions
@@ -125,7 +127,9 @@ install.packages(c(
   "VennDiagram",
   "UpSetR",
   "viridis",
-  "rstudioapi"
+  "rstudioapi",
+  "rmarkdown",
+  "knitr"
 ))
 
 # Bioconductor packages
@@ -153,36 +157,33 @@ BiocManager::install(c(
    - Copy and configure `config/data_sources_TEMPLATE.csv` with dataset paths
    - Copy and configure `config/sample_metadata_TEMPLATE.txt` with sample information
 
-2. **Run differential expression analysis:**
+2. **Run differential expression analysis (in RStudio):**
 
-   **In RStudio:**
-   - Open `run_differential_expression.R`
-   - Edit the parameters at the top of the script
-   - Click **"Source"** button or press `Ctrl/Cmd+Shift+S`
-
-   **Or from Terminal:**
-   ```bash
-   Rscript run_differential_expression.R
-   ```
+   - Open `run_differential_expression.Rmd` (or duplicate it to a `_local.Rmd`
+     copy and edit there — the `_local.Rmd` file is git-tracked but treated as
+     your working copy; keep the template at its defaults).
+   - Edit the parameter chunk near the top.
+   - Step through chunks with **`Ctrl/Cmd+Shift+Enter`** (run current chunk) or
+     click the green ▶ arrow on each chunk. Plots render inline and in the
+     RStudio **Plots** pane in real time, so you can supervise QC before the
+     pipeline finishes.
+   - To run end-to-end: **Run → Run All**, or **Knit** to render an HTML report.
 
 3. **Generate visualizations:**
 
-   **In RStudio:**
-   - Open `run_upset_venn.R` or `run_heatmap.R`
-   - Edit parameters as needed
-   - Click **"Source"** to run
+   - Open `run_upset_venn.Rmd` or `run_heatmap.Rmd`.
+   - Edit the parameter chunk, then run chunks interactively as above.
 
-   **Or from Terminal:**
-   ```bash
-   Rscript run_upset_venn.R    # For UpSet plots
-   Rscript run_heatmap.R       # For heatmaps
-   ```
+> **Terminal use:** The `.Rmd` files can be batch-rendered with
+> `Rscript -e 'rmarkdown::render("run_differential_expression.Rmd")'`, but the
+> intended workflow is interactive use inside RStudio so you can monitor each
+> step.
 
-### Three Main Scripts
+### Three Main Notebooks
 
-This pipeline provides three user-friendly scripts with configurable parameters at the top of each file:
+This pipeline provides three annotated R Markdown notebooks with configurable parameters near the top of each file:
 
-1. **`run_differential_expression.R`** - Complete DE analysis pipeline
+1. **`run_differential_expression.Rmd`** - Complete DE analysis pipeline
    - Loads and merges datasets
    - Runs DESeq2 analysis
    - Generates PCA plots and sample correlation heatmap
@@ -190,30 +191,32 @@ This pipeline provides three user-friendly scripts with configurable parameters 
    - Optional GO/KEGG enrichment
    - Exports results to Excel
 
-2. **`run_upset_venn.R`** - Gene set overlap analysis
+2. **`run_upset_venn.Rmd`** - Gene set overlap analysis
    - Compare multiple DE results or create categories from single result
    - Generate UpSet plots and Venn diagrams
    - Export overlap gene lists
 
-3. **`run_heatmap.R`** - Flexible heatmap generation
+3. **`run_heatmap.Rmd`** - Flexible heatmap generation
    - Multiple gene selection methods (pathway, file, custom, all)
    - Sample filtering by metadata
    - Customizable clustering and colors
 
 ### Customization
 
-All scripts use a parameter section at the top for easy configuration. Simply edit the values and run:
+All notebooks expose their parameters in a single chunk near the top — edit
+the values, then run downstream chunks:
 
-```r
-# Example from run_differential_expression.R
-ANALYSIS_NAME <- "GroupA_vs_GroupB"
-BASELINE_LEVEL <- "GroupB"
-COMPARISON_LEVEL <- "GroupA"
-DESIGN_FORMULA <- "~CellType"
-FACTOR_NAME <- "CellType"
+````
+```{r parameters}
+ANALYSIS_NAME       <- "GroupA_vs_GroupB"
+BASELINE_LEVEL      <- "GroupB"
+COMPARISON_LEVEL    <- "GroupA"
+DESIGN_FORMULA      <- "~CellType"
+FACTOR_NAME         <- "CellType"
 ENRICHMENT_ORGANISM <- "human"
-PERFORM_ENRICHMENT <- TRUE
+PERFORM_ENRICHMENT  <- TRUE
 ```
+````
 
 **See [USER_GUIDE.md](USER_GUIDE.md) for complete documentation of all parameters.**
 

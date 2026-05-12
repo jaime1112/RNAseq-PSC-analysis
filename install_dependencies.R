@@ -28,7 +28,11 @@ cran_packages <- c(
   "UpSetR",         # UpSet plots for set intersections
 
   # RStudio integration
-  "rstudioapi"      # RStudio API for path detection
+  "rstudioapi",     # RStudio API for path detection
+
+  # R Markdown notebooks
+  "rmarkdown",      # Render the run_*.Rmd notebooks
+  "knitr"           # Chunk evaluation engine
 )
 
 install.packages(cran_packages, dependencies = TRUE)

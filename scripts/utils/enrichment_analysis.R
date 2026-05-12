@@ -63,30 +63,54 @@ run_enrichment_analysis <- function(gene_lists, universe, organism = "human",
     pvalueCutoff = pval_cutoff
   )
 
+  if (is.null(ora_combined)) {
+    message("No GO enrichment found for any gene cluster — skipping GO downstream steps.")
+  }
+
   # Add gene symbols to GO results
   ora_combined <- add_gene_symbols(ora_combined, org_info$org_db)
 
   # Calculate pairwise term similarity (if available)
-  if ("pairwise_termsim" %in% getNamespaceExports("clusterProfiler")) {
+  if (!is.null(ora_combined) &&
+      "pairwise_termsim" %in% getNamespaceExports("clusterProfiler")) {
     ora_combined <- clusterProfiler::pairwise_termsim(ora_combined)
   }
 
   # KEGG enrichment
-  kegg_combined <- clusterProfiler::compareCluster(
-    geneClusters = gene_lists,
-    fun = "enrichKEGG",
-    universe = universe,
-    organism = org_info$kegg_code,
-    keyType = "ncbi-geneid",
-    pAdjustMethod = "BH",
-    pvalueCutoff = pval_cutoff
+  # enrichKEGG fetches pathway lists live from https://rest.kegg.jp/, which can
+  # time out or be unreachable. Give it a longer download window and trap network
+  # errors so a KEGG outage doesn't kill the whole pipeline.
+  prev_timeout <- getOption("timeout")
+  options(timeout = max(300, prev_timeout))
+  on.exit(options(timeout = prev_timeout), add = TRUE)
+
+  kegg_combined <- tryCatch(
+    clusterProfiler::compareCluster(
+      geneClusters = gene_lists,
+      fun = "enrichKEGG",
+      universe = universe,
+      organism = org_info$kegg_code,
+      keyType = "ncbi-geneid",
+      pAdjustMethod = "BH",
+      pvalueCutoff = pval_cutoff
+    ),
+    error = function(e) {
+      message("KEGG enrichment failed (", conditionMessage(e),
+              ") — skipping KEGG; GO results are unaffected.")
+      NULL
+    }
   )
+
+  if (is.null(kegg_combined)) {
+    message("No KEGG enrichment found for any gene cluster — skipping KEGG downstream steps.")
+  }
 
   # Add gene symbols to KEGG results
   kegg_combined <- add_gene_symbols(kegg_combined, org_info$org_db)
 
   # Calculate pairwise term similarity (if available)
-  if ("pairwise_termsim" %in% getNamespaceExports("clusterProfiler")) {
+  if (!is.null(kegg_combined) &&
+      "pairwise_termsim" %in% getNamespaceExports("clusterProfiler")) {
     kegg_combined <- clusterProfiler::pairwise_termsim(kegg_combined)
   }
 
@@ -104,6 +128,13 @@ run_enrichment_analysis <- function(gene_lists, universe, organism = "human",
 #' @param org_db Organism annotation database
 #' @return enrichment_result with added GeneSymbol column
 add_gene_symbols <- function(enrichment_result, org_db) {
+
+  # compareCluster returns NULL when no terms enrich in any cluster
+  if (is.null(enrichment_result) ||
+      is.null(enrichment_result@compareClusterResult) ||
+      nrow(enrichment_result@compareClusterResult) == 0) {
+    return(enrichment_result)
+  }
 
   # Split GeneID strings into lists of Entrez IDs
   entrez_lists <- strsplit(enrichment_result@compareClusterResult$geneID, "/")
@@ -143,6 +174,13 @@ add_gene_symbols <- function(enrichment_result, org_db) {
 generate_enrichment_dotplot <- function(enrichment_result, output_file, title,
                                        n_categories = 10, width = 8, height = 8) {
 
+  if (is.null(enrichment_result) ||
+      is.null(enrichment_result@compareClusterResult) ||
+      nrow(enrichment_result@compareClusterResult) == 0) {
+    message(paste("Skipping dotplot — no enrichment results for:", title))
+    return(invisible(NULL))
+  }
+
   pdf(file = output_file, width = width, height = height)
 
   dotplot <- enrichplot::dotplot(
@@ -154,6 +192,8 @@ generate_enrichment_dotplot <- function(enrichment_result, output_file, title,
 
   print(dotplot)
   dev.off()
+
+  if (interactive()) try(print(dotplot), silent = TRUE)
 
   message(paste("Enrichment dotplot saved to:", output_file))
 }
@@ -182,6 +222,8 @@ generate_enrichment_emapplot <- function(enrichment_result, output_file,
 
   print(emapplot)
   dev.off()
+
+  if (interactive()) try(print(emapplot), silent = TRUE)
 
   message(paste("Enrichment map plot saved to:", output_file))
 }

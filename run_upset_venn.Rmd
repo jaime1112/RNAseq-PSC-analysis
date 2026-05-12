@@ -1,0 +1,217 @@
+---
+title: "UpSet Plot and Venn Diagram Generator"
+author: "Chu Lab"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+```{r global-knitr-opts, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, warning = FALSE, message = TRUE,
+  fig.width = 10, fig.height = 6
+)
+```
+
+# Overview
+
+Compare DE gene lists across analyses and visualize the overlaps. Two
+operating modes:
+
+- **Method 1 (`USE_MULTIPLE_COMPARISONS = TRUE`):** read several `allGenes.xlsx`
+  files (one per comparison from `run_differential_expression.Rmd`) and
+  intersect their significant-gene sets.
+- **Method 2 (`USE_SINGLE_RESULT = TRUE`):** take a single `allGenes.xlsx` and
+  split it into categories by fold-change magnitude (High/Moderate × Up/Down).
+
+Each mode produces an UpSet plot (always), a Venn diagram (when there are
+2–4 lists), an Excel workbook with the per-set gene lists + all pairwise/full
+overlaps, and a summary table.
+
+# 1. Parameters
+
+```{r parameters}
+ANALYSIS_NAME <- "multi_comparison"
+OUTPUT_DIR    <- "figures"
+
+# ---- Method choice (set exactly one to TRUE) ----------------------
+USE_MULTIPLE_COMPARISONS <- TRUE   # Method 1
+USE_SINGLE_RESULT        <- FALSE  # Method 2
+
+# ---- Method 1 inputs ----------------------------------------------
+# Named vector: list name = path to that comparison's allGenes.xlsx
+COMPARISON_RESULTS <- c(
+  "Comparison1" = "figures/comparison1/allGenes.xlsx",
+  "Comparison2" = "figures/comparison2/allGenes.xlsx"
+)
+
+# ---- Method 2 inputs ----------------------------------------------
+SINGLE_RESULT_FILE <- "figures/my_analysis/allGenes.xlsx"
+
+# ---- Gene filtering (both methods) --------------------------------
+DIRECTION       <- "both"  # "up", "down", or "both"
+LFC_THRESHOLD   <- 1
+PADJ_THRESHOLD  <- 0.05
+
+# ---- Optional pathway pre-filter ----------------------------------
+FILTER_PATHWAY <- TRUE
+PATHWAY_FILE   <- "config/WntSignalingPathway.txt"
+```
+
+# 2. Setup
+
+```{r setup-environment}
+suppressPackageStartupMessages({
+  library("tidyverse")
+  library("readxl")
+  library("writexl")
+  library("VennDiagram")
+  library("UpSetR")
+  library("grid")
+})
+
+source("scripts/utils/gene_set_operations.R")
+
+output_dir <- file.path(OUTPUT_DIR, ANALYSIS_NAME)
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
+```
+
+# 3. Optional pathway filter
+
+If a pathway file is provided, the per-comparison gene lists will be
+intersected with this gene universe before overlap analysis (use this to ask
+e.g. "which WNT genes are DE in both contrasts?").
+
+```{r pathway-load}
+if (FILTER_PATHWAY && file.exists(PATHWAY_FILE)) {
+  pathway_genes <- load_pathway_genes(PATHWAY_FILE)
+} else {
+  pathway_genes <- NULL
+  message("No pathway pre-filter applied.")
+}
+```
+
+# 4. Build gene lists
+
+```{r build-gene-lists}
+if (USE_MULTIPLE_COMPARISONS) {
+
+  gene_lists <- load_de_gene_lists(
+    results_files   = COMPARISON_RESULTS,
+    lfc_threshold   = LFC_THRESHOLD,
+    padj_threshold  = PADJ_THRESHOLD,
+    direction       = DIRECTION,
+    gene_filter     = pathway_genes
+  )
+
+} else if (USE_SINGLE_RESULT) {
+
+  res <- as.data.frame(read_excel(SINGLE_RESULT_FILE))
+  gene_lists <- list()
+
+  if (DIRECTION %in% c("up", "both")) {
+    gene_lists$High_Up <- res$Row.names[
+      !is.na(res$log2FoldChange) & !is.na(res$padj) &
+      res$log2FoldChange > 2 & res$padj < PADJ_THRESHOLD
+    ]
+    gene_lists$Moderate_Up <- res$Row.names[
+      !is.na(res$log2FoldChange) & !is.na(res$padj) &
+      res$log2FoldChange > 1 & res$log2FoldChange <= 2 &
+      res$padj < PADJ_THRESHOLD
+    ]
+  }
+  if (DIRECTION %in% c("down", "both")) {
+    gene_lists$High_Down <- res$Row.names[
+      !is.na(res$log2FoldChange) & !is.na(res$padj) &
+      res$log2FoldChange < -2 & res$padj < PADJ_THRESHOLD
+    ]
+    gene_lists$Moderate_Down <- res$Row.names[
+      !is.na(res$log2FoldChange) & !is.na(res$padj) &
+      res$log2FoldChange < -1 & res$log2FoldChange >= -2 &
+      res$padj < PADJ_THRESHOLD
+    ]
+  }
+
+  if (!is.null(pathway_genes)) {
+    gene_lists <- lapply(gene_lists, function(x) intersect(x, pathway_genes))
+  }
+
+  for (name in names(gene_lists)) {
+    cat(sprintf("  %-20s: %d genes\n", name, length(gene_lists[[name]])))
+  }
+
+} else {
+  stop("Set exactly one of USE_MULTIPLE_COMPARISONS / USE_SINGLE_RESULT to TRUE")
+}
+```
+
+# 5. UpSet plot
+
+UpSet plots scale better than Venn diagrams beyond 4 sets — the bar chart
+shows the size of every intersection, sorted by frequency.
+
+```{r upset}
+generate_upset_plot(
+  gene_lists    = gene_lists,
+  output_file   = file.path(output_dir, "UpSet_gene_overlaps.pdf"),
+  title         = "Gene Set Overlaps",
+  n_intersects  = 20,
+  width = 12, height = 7
+)
+```
+
+# 6. Venn diagram (2–4 lists only)
+
+Skipped automatically for >4 lists — use the UpSet plot above for those.
+
+```{r venn}
+if (length(gene_lists) >= 2 && length(gene_lists) <= 4) {
+  generate_venn_diagram(
+    gene_lists  = gene_lists,
+    output_file = file.path(output_dir, "Venn_gene_overlaps.pdf"),
+    title       = "Gene Set Overlaps",
+    width = 10, height = 10
+  )
+} else {
+  message("Skipping Venn diagram (need 2–4 gene lists; have ", length(gene_lists), ")")
+}
+```
+
+# 7. Overlaps + export
+
+`export_gene_lists()` writes one Excel workbook with one sheet per input list,
+plus sheets for the all-way overlap and every pairwise overlap. `summarize_overlaps()`
+produces a top-level summary table.
+
+```{r overlaps}
+universal_genes <- find_overlap_genes(gene_lists, pattern = "all")
+
+export_gene_lists(
+  gene_lists       = gene_lists,
+  output_file      = file.path(output_dir, "gene_lists_with_overlaps.xlsx"),
+  include_overlaps = TRUE
+)
+
+summary_table <- summarize_overlaps(gene_lists)
+write_xlsx(summary_table, file.path(output_dir, "gene_list_summary.xlsx"))
+summary_table
+```
+
+# 8. Quick peek at universal genes
+
+```{r universal-preview}
+if (length(universal_genes) > 0) {
+  cat("Universal genes (in ALL lists):", length(universal_genes), "\n")
+  cat("First 20:", paste(head(universal_genes, 20), collapse = ", "), "\n")
+  if (length(universal_genes) > 20) {
+    cat("... and", length(universal_genes) - 20, "more (see Excel for full list)\n")
+  }
+} else {
+  cat("No genes shared across all input lists.\n")
+}
+```

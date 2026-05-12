@@ -46,6 +46,7 @@ data/*
 config/*_full.*
 # Local working copies of scripts (use main versions as starting point)
 *_local.R
+*_local.Rmd
 
 # Temporary files
 *.log

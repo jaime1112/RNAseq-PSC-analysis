@@ -64,12 +64,12 @@ BiocManager::install(c("DESeq2", "org.Hs.eg.db", "org.Ss.eg.db",
 **Purpose:** Run a complete differential expression analysis comparing
 two groups (e.g., GroupA vs GroupB).
 
-**File:** `run_differential_expression.R`
+**File:** `run_differential_expression.Rmd`
 
 ### How to Run in RStudio
 
 1.  **Open the script** in RStudio: `File` → `Open File` → select
-    `run_differential_expression.R`
+    `run_differential_expression.Rmd`
 
 2.  **Configure your analysis** by editing the parameters at the top of
     the script:
@@ -99,11 +99,15 @@ PERFORM_ENRICHMENT <- TRUE    # Run GO/KEGG enrichment
 RUN_PATHWAY_ANALYSIS <- TRUE  # Filter pathway-specific genes
 ```
 
-3.  **Run the script:** Click the **"Source"** button (top-right of
-    script pane) or press `Ctrl/Cmd+Shift+S`
+3.  **Run the notebook chunk-by-chunk:** Press
+    **`Ctrl/Cmd+Shift+Enter`** (run current chunk) or click the green ▶
+    arrow on each chunk. Plots render in the **Plots** pane in real time
+    so you can supervise QC as the pipeline runs. To run the whole
+    notebook in one go: **Run → Run All**, or **Knit** for an HTML report.
 
-    > **Note:** You can also run it from Terminal with
-    > `Rscript run_differential_expression.R` if preferred
+    > **Note:** You can also render from Terminal with
+    > `Rscript -e 'rmarkdown::render("run_differential_expression.Rmd")'`
+    > if preferred.
 
 4.  **Monitor progress:** Watch the R Console for progress messages and
     any warnings/errors
@@ -147,12 +151,12 @@ highlighted - `MAplot_WNTlinked.pdf` - WNT pathway genes labeled -
 **Purpose:** Compare gene lists across multiple comparisons or
 categories to find overlaps.
 
-**File:** `run_upset_venn.R`
+**File:** `run_upset_venn.Rmd`
 
 ### How to Run in RStudio
 
 1.  **Open the script** in RStudio: `File` → `Open File` → select
-    `run_upset_venn.R`
+    `run_upset_venn.Rmd`
 
 2.  **Choose your analysis mode** by editing the parameters:
 
@@ -205,11 +209,11 @@ FILTER_PATHWAY <- TRUE
 PATHWAY_FILE <- "config/WntSignalingPathway.txt"
 ```
 
-3.  **Run the script:** Click the **"Source"** button or press
-    `Ctrl/Cmd+Shift+S`
+3.  **Run the notebook chunk-by-chunk** (`Ctrl/Cmd+Shift+Enter` per
+    chunk, or **Run → Run All** for the whole notebook).
 
-    > **Note:** You can also run from Terminal with
-    > `Rscript run_upset_venn.R` if preferred
+    > **Note:** Terminal rendering with
+    > `Rscript -e 'rmarkdown::render("run_upset_venn.Rmd")'` also works.
 
 ### What It Does
 
@@ -236,12 +240,12 @@ All files are saved to `figures/[ANALYSIS_NAME]/`: -
 **Purpose:** Create customizable heatmaps with flexible gene and sample
 selection.
 
-**File:** `run_heatmap.R`
+**File:** `run_heatmap.Rmd`
 
 ### How to Run in RStudio
 
 1.  **Open the script** in RStudio: `File` → `Open File` → select
-    `run_heatmap.R`
+    `run_heatmap.Rmd`
 
 2.  **Configure your heatmap** by editing the parameters:
 
@@ -303,11 +307,12 @@ PLOT_WIDTH <- 12
 PLOT_HEIGHT <- 10
 ```
 
-5.  **Run the script:** Click the **"Source"** button or press
-    `Ctrl/Cmd+Shift+S`
+5.  **Run the notebook chunk-by-chunk** (`Ctrl/Cmd+Shift+Enter` per
+    chunk, or **Run → Run All** for the whole notebook). The heatmap
+    renders in the **Plots** pane in addition to being saved as PDF.
 
-    > **Note:** You can also run from Terminal with
-    > `Rscript run_heatmap.R` if preferred
+    > **Note:** Terminal rendering with
+    > `Rscript -e 'rmarkdown::render("run_heatmap.Rmd")'` also works.
 
 ### What It Does
 
@@ -482,52 +487,52 @@ heatmaps - Use fewer samples or genes if necessary
 
 ``` bash
 # 1. Run differential expression
-Rscript run_differential_expression.R
+Rscript -e 'rmarkdown::render("run_differential_expression.Rmd")'
 
 # 2. Create heatmap of WNT pathway genes
-# Edit run_heatmap.R:
+# Edit run_heatmap.Rmd:
 #   - COUNTS_FILE = "figures/GroupA_vs_GroupB/normalized_counts.xlsx"
 #   - USE_PATHWAY_GENES = TRUE
-Rscript run_heatmap.R
+Rscript -e 'rmarkdown::render("run_heatmap.Rmd")'
 ```
 
 ### Workflow 2: Multi-Comparison Analysis
 
 ``` bash
 # 1. Run DE analysis for each comparison separately
-# Edit run_differential_expression.R for each comparison:
+# Edit run_differential_expression.Rmd for each comparison:
 #   - ANALYSIS_NAME = "comparison1"
 #   - COMPARISON_LEVEL = "GroupA"
-Rscript run_differential_expression.R
+Rscript -e 'rmarkdown::render("run_differential_expression.Rmd")'
 
 # Repeat for other comparisons...
 
 # 2. Compare results with UpSet plot
-# Edit run_upset_venn.R:
+# Edit run_upset_venn.Rmd:
 #   - USE_MULTIPLE_COMPARISONS = TRUE
 #   - List all comparison result files
-Rscript run_upset_venn.R
+Rscript -e 'rmarkdown::render("run_upset_venn.Rmd")'
 ```
 
 ### Workflow 3: Pathway-Focused Analysis
 
 ``` bash
 # 1. Run full DE analysis with pathway filtering
-# Edit run_differential_expression.R:
+# Edit run_differential_expression.Rmd:
 #   - RUN_PATHWAY_ANALYSIS = TRUE
-Rscript run_differential_expression.R
+Rscript -e 'rmarkdown::render("run_differential_expression.Rmd")'
 
 # 2. Create heatmap of pathway genes
-# Edit run_heatmap.R:
+# Edit run_heatmap.Rmd:
 #   - USE_PATHWAY_GENES = TRUE
 #   - PATHWAY_FILE = "config/WntSignalingPathway.txt"
-Rscript run_heatmap.R
+Rscript -e 'rmarkdown::render("run_heatmap.Rmd")'
 
 # 3. Compare up vs down regulated pathway genes
-# Edit run_upset_venn.R:
+# Edit run_upset_venn.Rmd:
 #   - USE_SINGLE_RESULT = TRUE
 #   - FILTER_PATHWAY = TRUE
-Rscript run_upset_venn.R
+Rscript -e 'rmarkdown::render("run_upset_venn.Rmd")'
 ```
 
 ------------------------------------------------------------------------
@@ -536,12 +541,12 @@ Rscript run_upset_venn.R
 
 | Task | Script | Key Parameter |
 |-----------------|-------------------|------------------------------------|
-| Run DE analysis | `run_differential_expression.R` | `ANALYSIS_NAME`, `FACTOR_NAME` |
-| Compare multiple analyses | `run_upset_venn.R` | `USE_MULTIPLE_COMPARISONS = TRUE` |
-| Compare up vs down regulation | `run_upset_venn.R` | `USE_SINGLE_RESULT = TRUE` |
-| Create pathway heatmap | `run_heatmap.R` | `USE_PATHWAY_GENES = TRUE` |
-| Create custom gene heatmap | `run_heatmap.R` | `USE_CUSTOM_GENES = TRUE` |
-| Filter samples in heatmap | `run_heatmap.R` | `SAMPLE_CRITERIA` |
+| Run DE analysis | `run_differential_expression.Rmd` | `ANALYSIS_NAME`, `FACTOR_NAME` |
+| Compare multiple analyses | `run_upset_venn.Rmd` | `USE_MULTIPLE_COMPARISONS = TRUE` |
+| Compare up vs down regulation | `run_upset_venn.Rmd` | `USE_SINGLE_RESULT = TRUE` |
+| Create pathway heatmap | `run_heatmap.Rmd` | `USE_PATHWAY_GENES = TRUE` |
+| Create custom gene heatmap | `run_heatmap.Rmd` | `USE_CUSTOM_GENES = TRUE` |
+| Filter samples in heatmap | `run_heatmap.Rmd` | `SAMPLE_CRITERIA` |
 
 ------------------------------------------------------------------------
 

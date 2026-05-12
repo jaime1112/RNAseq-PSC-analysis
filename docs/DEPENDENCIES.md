@@ -70,7 +70,7 @@ BiocManager::install(c(
 | Package | Purpose | Where Used |
 |---------|---------|-----------|
 | **tidyverse** | Data manipulation and visualization meta-package (includes dplyr, purrr, ggplot2) | All scripts |
-| **readxl** | Read Excel files | run_heatmap.R, run_upset_venn.R |
+| **readxl** | Read Excel files | run_heatmap.Rmd, run_upset_venn.Rmd |
 | **writexl** | Export to Excel format | All main scripts |
 | **ggplot2** | Grammar of graphics plotting (included in tidyverse) | Plotting utilities |
 | **ggrepel** | Non-overlapping text labels in plots | MA plots |
