@@ -26,7 +26,7 @@ RNAseq/
 ├── .gitignore                          # Git ignore rules
 │
 ├── run_differential_expression.Rmd        # Main DE analysis (annotated notebook)
-├── run_differential_expression_local.Rmd  # Working copy (edit freely)
+├── run_differential_expression_local.Rmd  # Local working copy (gitignored; make by copying the above)
 ├── run_upset_venn.Rmd                     # UpSet plot and Venn diagram generator
 ├── run_heatmap.Rmd                        # Heatmap generator
 ├── install_dependencies.R                 # One-shot package installer
@@ -160,8 +160,8 @@ BiocManager::install(c(
 2. **Run differential expression analysis (in RStudio):**
 
    - Open `run_differential_expression.Rmd` (or duplicate it to a `_local.Rmd`
-     copy and edit there — the `_local.Rmd` file is git-tracked but treated as
-     your working copy; keep the template at its defaults).
+     copy and edit there — `*_local.Rmd` files are gitignored so your edits stay
+     local; keep the tracked template at its generic defaults).
    - Edit the parameter chunk near the top.
    - Step through chunks with **`Ctrl/Cmd+Shift+Enter`** (run current chunk) or
      click the green ▶ arrow on each chunk. Plots render inline and in the
@@ -277,7 +277,7 @@ If you use this code or data, please cite: [PUBLICATION PENDING]
 This repository is primarily for publication reproducibility. For questions or issues:
 
 1. Open an issue on GitHub
-2. Contact the corresponding author: [lifangjack.chu@ucalgary.ca]
+2. Contact the corresponding author: lifangjack.chu@ucalgary.ca
 
 ## License
 
@@ -292,11 +292,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-**Corresponding Author:** [Name]
-**Email:** [email@institution.edu]
+**Corresponding Author:** Dr. Li-Fang Chu
+**Email:** lifangjack.chu@ucalgary.ca
 **Lab Website:** [URL]
-**Institution:** [Institution Name]
+**Institution:** University of Calgary
 
 ---
 
-**Last Updated:** December 2025
+**Last Updated:** April 2026

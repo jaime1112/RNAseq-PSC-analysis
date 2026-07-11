@@ -119,7 +119,7 @@ DESeq2 uses median-of-ratios method:
 For visualization and clustering:
 
 ```r
-vsd <- vst(dds, blind = FALSE)
+vsd <- vst(dds)   # blind = TRUE (default): unsupervised transform for QC/PCA
 ```
 
 **Properties:**
@@ -356,4 +356,4 @@ All analyses use open-source software available via CRAN and Bioconductor.
 
 See session info in analysis reports for exact versions used.
 
-**Last Updated:** December 2025
+**Last Updated:** April 2026

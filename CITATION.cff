@@ -10,17 +10,21 @@ message: >-
   metadata from this file.
 type: software
 authors:
-  - given-names: [First Name]
-    family-names: [Last Name]
-    email: [email@institution.edu]
-    affiliation: [Institution Name]
-    orcid: 'https://orcid.org/0000-0000-0000-0000'
-identifiers:
-  - type: doi
-    value: 10.5281/zenodo.XXXXXXX
-    description: Zenodo DOI for this repository
-repository-code: 'https://github.com/[username]/[repo-name]'
-url: 'https://github.com/[username]/[repo-name]'
+  - given-names: Jaime Andres
+    family-names: Neira
+    affiliation: University of Calgary
+  - given-names: Li-Fang
+    family-names: Chu
+    email: lifangjack.chu@ucalgary.ca
+    affiliation: University of Calgary
+# TODO before release: add author ORCIDs, and uncomment the Zenodo DOI once the
+# repository release is archived and a DOI is minted.
+# identifiers:
+#   - type: doi
+#     value: 10.5281/zenodo.XXXXXXX
+#     description: Zenodo DOI for this repository
+repository-code: 'https://github.com/jaime1112/RNAseq-PSC-analysis'
+url: 'https://github.com/jaime1112/RNAseq-PSC-analysis'
 abstract: >-
   This repository contains bioinformatics analysis code for
   comparative transcriptomic analysis of porcine and human

@@ -141,8 +141,16 @@ cat("Final matrix:", nrow(count_matrix), "genes x", ncol(count_matrix), "samples
 
 # 4. Build the DESeqDataSet
 
-The metadata file's rows must match `colnames(count_matrix)`. `set_factor_levels`
-forces the reference level so the contrast direction is what you expect.
+The metadata file's rows must correspond to `colnames(count_matrix)` **in the same
+order** — DESeq2 does not reorder them for you and will error if they don't line up.
+`set_factor_levels` forces the reference level so the contrast direction is what you
+expect.
+
+> **Keep each comparison scoped to its two groups.** `set_factor_levels` sets the
+> `FACTOR_NAME` column to exactly `c(BASELINE_LEVEL, COMPARISON_LEVEL)`; any sample
+> whose value is not one of those two becomes `NA` and is silently dropped from the
+> model. Configure `DATA_CONFIG` / `METADATA_FILE` so only the two groups being
+> contrasted are loaded.
 
 ```{r build-dds}
 dds <- create_deseq_dataset(count_matrix, METADATA_FILE, design_formula = DESIGN_FORMULA)

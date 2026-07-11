@@ -2,11 +2,10 @@
 
 ## Overview
 
-During Step 4 of the DE pipeline, the script generates:
+During the QC step of the DE pipeline (Section 6 of `run_differential_expression.Rmd`), the script generates:
 
-1. **PCA plot by analysis factor** (`PCA_by_[FACTOR_NAME].pdf`) — colored by the grouping used in the DE comparison
-2. **PCA plot by Dataset** (`PCA_by_Dataset.pdf`) — colored by data source for QC
-3. **Sample correlation heatmap** (`sample_correlation_heatmap.pdf`) — Pearson correlation matrix with hierarchical clustering, annotated by all metadata columns
+1. **One PCA plot per metadata column** (`PCA_by_[COLUMN].pdf`) — the pipeline loops over every column in `colData` (e.g. `PCA_by_CellType.pdf`, `PCA_by_Dataset.pdf`), so you can inspect clustering by biological group, data source, sex, batch, etc.
+2. **Sample correlation heatmap** (`sample_correlation_heatmap.pdf`) — Pearson correlation matrix with hierarchical clustering, annotated by all metadata columns
 
 ## Sample Correlation Heatmap Details
 
