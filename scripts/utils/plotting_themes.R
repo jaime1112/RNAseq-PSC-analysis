@@ -243,17 +243,12 @@ generate_correlation_heatmap <- function(rld, output_file,
   if (length(annotation_cols) > 0) {
     annotation_df <- metadata[, annotation_cols, drop = FALSE]
 
-    # Create annotation colors
+    # Create annotation colors (shared helper in color_helpers.R)
     annotation_colors <- list()
     for (col in annotation_cols) {
-      unique_vals <- unique(annotation_df[[col]])
-      n_vals <- length(unique_vals)
-      if (n_vals <= 12) {
-        palette <- RColorBrewer::brewer.pal(min(max(n_vals, 3), 8), "Set2")
-        if (n_vals > 8) {
-          palette <- c(palette, RColorBrewer::brewer.pal(n_vals - 8, "Set3"))
-        }
-        annotation_colors[[col]] <- setNames(palette[1:n_vals], unique_vals)
+      col_colors <- categorical_annotation_colors(annotation_df[[col]])
+      if (!is.null(col_colors)) {
+        annotation_colors[[col]] <- col_colors
       }
     }
   } else {

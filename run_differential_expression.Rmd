@@ -98,6 +98,7 @@ suppressPackageStartupMessages({
   }
 })
 
+source("scripts/utils/color_helpers.R")
 source("scripts/utils/data_processing.R")
 source("scripts/utils/deseq_helpers.R")
 source("scripts/utils/plotting_themes.R")

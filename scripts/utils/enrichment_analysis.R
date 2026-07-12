@@ -70,12 +70,6 @@ run_enrichment_analysis <- function(gene_lists, universe, organism = "human",
   # Add gene symbols to GO results
   ora_combined <- add_gene_symbols(ora_combined, org_info$org_db)
 
-  # Calculate pairwise term similarity (if available)
-  if (!is.null(ora_combined) &&
-      "pairwise_termsim" %in% getNamespaceExports("clusterProfiler")) {
-    ora_combined <- clusterProfiler::pairwise_termsim(ora_combined)
-  }
-
   # KEGG enrichment
   # enrichKEGG fetches pathway lists live from https://rest.kegg.jp/, which can
   # time out or be unreachable. Give it a longer download window and trap network
@@ -107,12 +101,6 @@ run_enrichment_analysis <- function(gene_lists, universe, organism = "human",
 
   # Add gene symbols to KEGG results
   kegg_combined <- add_gene_symbols(kegg_combined, org_info$org_db)
-
-  # Calculate pairwise term similarity (if available)
-  if (!is.null(kegg_combined) &&
-      "pairwise_termsim" %in% getNamespaceExports("clusterProfiler")) {
-    kegg_combined <- clusterProfiler::pairwise_termsim(kegg_combined)
-  }
 
   return(list(
     GO = ora_combined,
@@ -196,34 +184,4 @@ generate_enrichment_dotplot <- function(enrichment_result, output_file, title,
   if (interactive()) try(print(dotplot), silent = TRUE)
 
   message(paste("Enrichment dotplot saved to:", output_file))
-}
-
-
-#' Generate enrichment map plot
-#'
-#' @param enrichment_result Enrichment result object (with pairwise_termsim)
-#' @param output_file Path to output PDF
-#' @param n_categories Number of categories to show (default: 10)
-#' @param width Plot width (default: 8)
-#' @param height Plot height (default: 8)
-generate_enrichment_emapplot <- function(enrichment_result, output_file,
-                                        n_categories = 10, width = 8, height = 8) {
-
-  pdf(file = output_file, width = width, height = height)
-
-  emapplot <- enrichplot::emapplot(
-    enrichment_result,
-    pie = "count",
-    size_edge = 0.5,
-    size_category = 3,
-    layout = "nicely",
-    showCategory = n_categories
-  )
-
-  print(emapplot)
-  dev.off()
-
-  if (interactive()) try(print(emapplot), silent = TRUE)
-
-  message(paste("Enrichment map plot saved to:", output_file))
 }

@@ -187,23 +187,6 @@ dataset_samples <- get_samples_by_criteria(
 )
 ```
 
-#### 3. `generate_multiple_heatmaps()`
-Batch create heatmaps for gene list collection.
-
-```r
-# Create one heatmap per gene list
-generate_multiple_heatmaps(
-  count_data = counts,
-  gene_list_collection = gene_lists,
-  output_dir = "figures/heatmaps",
-  base_filename = "Heatmap_Category",
-  metadata = metadata,
-  annotation_col = c("CellType", "Dataset"),
-  color_scheme = "viridis",
-  scale_method = "0to1"
-)
-```
-
 ---
 
 ## Complete Workflow Example

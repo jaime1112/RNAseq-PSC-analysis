@@ -82,6 +82,7 @@ suppressPackageStartupMessages({
   library("RColorBrewer")
 })
 
+source("scripts/utils/color_helpers.R")
 source("scripts/utils/heatmap_helpers.R")
 source("scripts/utils/gene_set_operations.R")
 

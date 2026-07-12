@@ -115,22 +115,14 @@ generate_flexible_heatmap <- function(count_data, gene_list = NULL, sample_list 
     # Subset metadata to samples in heatmap
     metadata_subset <- metadata[colnames(scaled_data), annotation_col, drop = FALSE]
 
-    # Create annotation colors automatically. brewer.pal has a minimum of 3 and
-    # fixed maxima (Set2 = 8, Set3 = 12), so build a 20-color pool once and take
-    # exactly n_vals from it. This avoids the earlier off-by-count bug where
-    # requesting fewer than 3 (or 8 + a small remainder) returned more colors
-    # than labels and left annotation values with NA-named / mis-assigned colors.
+    # Assign one distinct color per annotation level (shared helper in
+    # color_helpers.R). NULL is returned for columns with more levels than the
+    # palette covers, in which case pheatmap picks its own colors.
     annotation_colors <- list()
-    color_pool <- c(RColorBrewer::brewer.pal(8, "Set2"),
-                    RColorBrewer::brewer.pal(12, "Set3"))
     for (col in annotation_col) {
-      unique_vals <- unique(metadata_subset[[col]])
-      n_vals <- length(unique_vals)
-
-      if (n_vals >= 1 && n_vals <= length(color_pool)) {
-        palette <- color_pool[seq_len(n_vals)]
-        names(palette) <- unique_vals
-        annotation_colors[[col]] <- palette
+      col_colors <- categorical_annotation_colors(metadata_subset[[col]])
+      if (!is.null(col_colors)) {
+        annotation_colors[[col]] <- col_colors
       }
     }
   } else {
@@ -248,49 +240,4 @@ get_samples_by_criteria <- function(metadata, criteria) {
   message(paste("Selected", length(selected_samples), "samples matching criteria"))
 
   return(selected_samples)
-}
-
-
-#' Create multiple heatmaps from gene list collection
-#'
-#' @param count_data Normalized count matrix
-#' @param gene_list_collection Named list of gene vectors
-#' @param output_dir Directory for output files
-#' @param base_filename Base name for output files
-#' @param metadata Sample metadata (optional)
-#' @param sample_list Samples to include (optional)
-#' @param ... Additional arguments passed to generate_flexible_heatmap
-#' @return Vector of output file paths
-generate_multiple_heatmaps <- function(count_data, gene_list_collection, output_dir,
-                                      base_filename = "heatmap", metadata = NULL,
-                                      sample_list = NULL, ...) {
-
-  output_files <- c()
-
-  for (list_name in names(gene_list_collection)) {
-    gene_list <- gene_list_collection[[list_name]]
-
-    if (length(gene_list) == 0) {
-      message(paste("Skipping", list_name, "- empty gene list"))
-      next
-    }
-
-    output_file <- file.path(output_dir, paste0(base_filename, "_", list_name, ".pdf"))
-
-    generate_flexible_heatmap(
-      count_data = count_data,
-      gene_list = gene_list,
-      sample_list = sample_list,
-      metadata = metadata,
-      output_file = output_file,
-      title = paste(list_name, "Expression"),
-      ...
-    )
-
-    output_files <- c(output_files, output_file)
-  }
-
-  message(paste("\nGenerated", length(output_files), "heatmaps in", output_dir))
-
-  return(invisible(output_files))
 }
