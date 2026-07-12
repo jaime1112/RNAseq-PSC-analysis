@@ -11,6 +11,7 @@
 #' @param title Plot title
 #' @param cluster_rows Cluster rows (default: TRUE)
 #' @param cluster_cols Cluster columns (default: TRUE)
+#' @param sort_rows_alpha Order gene rows alphabetically (default: FALSE); overrides row clustering
 #' @param show_rownames Show gene names (default: TRUE)
 #' @param show_colnames Show sample names (default: FALSE)
 #' @param color_scheme Color scheme: "viridis", "blue_red", or custom palette
@@ -22,6 +23,7 @@
 generate_flexible_heatmap <- function(count_data, gene_list = NULL, sample_list = NULL,
                                      metadata = NULL, output_file, title = NULL,
                                      cluster_rows = TRUE, cluster_cols = TRUE,
+                                     sort_rows_alpha = FALSE,
                                      show_rownames = TRUE, show_colnames = FALSE,
                                      color_scheme = "viridis", scale_method = "0to1",
                                      annotation_col = NULL, width = 10, height = 8) {
@@ -64,6 +66,16 @@ generate_flexible_heatmap <- function(count_data, gene_list = NULL, sample_list 
     message(paste("Using", length(available_samples), "samples from provided sample_list"))
   }
 
+  # Optionally force alphabetical gene (row) order. Row clustering reorders rows
+  # by dendrogram, so it is disabled here when alphabetical order is requested.
+  if (sort_rows_alpha) {
+    count_data <- count_data[order(rownames(count_data)), , drop = FALSE]
+    if (cluster_rows) {
+      message("sort_rows_alpha = TRUE: disabling row clustering to keep alphabetical order")
+      cluster_rows <- FALSE
+    }
+  }
+
   # Scale data
   if (scale_method == "0to1") {
     # 0-1 normalization per gene
@@ -103,18 +115,20 @@ generate_flexible_heatmap <- function(count_data, gene_list = NULL, sample_list 
     # Subset metadata to samples in heatmap
     metadata_subset <- metadata[colnames(scaled_data), annotation_col, drop = FALSE]
 
-    # Create annotation colors automatically
+    # Create annotation colors automatically. brewer.pal has a minimum of 3 and
+    # fixed maxima (Set2 = 8, Set3 = 12), so build a 20-color pool once and take
+    # exactly n_vals from it. This avoids the earlier off-by-count bug where
+    # requesting fewer than 3 (or 8 + a small remainder) returned more colors
+    # than labels and left annotation values with NA-named / mis-assigned colors.
     annotation_colors <- list()
+    color_pool <- c(RColorBrewer::brewer.pal(8, "Set2"),
+                    RColorBrewer::brewer.pal(12, "Set3"))
     for (col in annotation_col) {
       unique_vals <- unique(metadata_subset[[col]])
       n_vals <- length(unique_vals)
 
-      if (n_vals <= 12) {
-        # Use predefined palette for categorical data
-        palette <- RColorBrewer::brewer.pal(min(n_vals, 8), "Set2")
-        if (n_vals > 8) {
-          palette <- c(palette, RColorBrewer::brewer.pal(n_vals - 8, "Set3"))
-        }
+      if (n_vals >= 1 && n_vals <= length(color_pool)) {
+        palette <- color_pool[seq_len(n_vals)]
         names(palette) <- unique_vals
         annotation_colors[[col]] <- palette
       }
@@ -134,8 +148,14 @@ generate_flexible_heatmap <- function(count_data, gene_list = NULL, sample_list 
     fontsize_row <- 8
   }
 
-  # Generate heatmap
+  # Generate heatmap. Guarantee the PDF device is closed even if pheatmap/print
+  # errors or the render is interrupted; otherwise the device leaks and the
+  # output file is left truncated at 0 bytes. The explicit dev.off() below is the
+  # normal-path close (kept so the interactive preview afterwards draws to the
+  # screen device); this on.exit only fires if that close was never reached.
   pdf(file = output_file, width = width, height = height)
+  pdf_dev <- dev.cur()
+  on.exit(if (pdf_dev %in% dev.list()) dev.off(pdf_dev), add = TRUE)
 
   heatmap_plot <- pheatmap::pheatmap(
     mat = scaled_data,

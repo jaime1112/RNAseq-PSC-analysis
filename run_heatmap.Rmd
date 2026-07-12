@@ -62,6 +62,7 @@ SAMPLE_CRITERIA <- NULL
 # ---- Heatmap parameters -------------------------------------------
 CLUSTER_ROWS    <- TRUE
 CLUSTER_COLS    <- FALSE
+SORT_ROWS_ALPHA <- FALSE               # TRUE orders gene rows A->Z (overrides row clustering)
 COLOR_SCHEME    <- "viridis"           # "viridis" / "blue_red" / "blue_yellow"
 SCALE_METHOD    <- "row"               # "0to1" / "row" (z-score) / "column" / "none"
 ANNOTATION_COLS <- c("CellType", "Dataset")
@@ -143,6 +144,8 @@ Renders to the Plots pane and writes a PDF to `OUTPUT_DIR/ANALYSIS_NAME.pdf`.
   values bounded.
 - Turn `CLUSTER_COLS` to `TRUE` to let samples self-cluster — useful for QC,
   less so when you want to enforce a specific ordering.
+- `SORT_ROWS_ALPHA = TRUE` orders gene rows alphabetically (A->Z). It overrides
+  row clustering, so `CLUSTER_ROWS` is ignored while it is on.
 
 ```{r heatmap}
 output_file <- file.path(OUTPUT_DIR, paste0(ANALYSIS_NAME, ".pdf"))
@@ -154,8 +157,9 @@ generate_flexible_heatmap(
   metadata       = metadata,
   output_file    = output_file,
   title          = ANALYSIS_NAME,
-  cluster_rows   = CLUSTER_ROWS,
-  cluster_cols   = CLUSTER_COLS,
+  cluster_rows    = CLUSTER_ROWS,
+  cluster_cols    = CLUSTER_COLS,
+  sort_rows_alpha = SORT_ROWS_ALPHA,
   color_scheme   = COLOR_SCHEME,
   scale_method   = SCALE_METHOD,
   annotation_col = ANNOTATION_COLS,
