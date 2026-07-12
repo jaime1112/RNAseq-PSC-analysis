@@ -40,22 +40,15 @@ version control)
 
 **Installation:**
 
-Open RStudio and run these commands in the Console:
+From the project root, run the install script once in the RStudio Console:
 
 ``` r
-# Install CRAN packages
-install.packages(c("tidyverse", "readxl", "writexl", "ggplot2",
-                   "ggrepel", "ggpubr", "pheatmap", "viridis",
-                   "RColorBrewer", "VennDiagram", "UpSetR",
-                   "rstudioapi"))
-
-# Install Bioconductor packages
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(c("DESeq2", "org.Hs.eg.db", "org.Ss.eg.db",
-                       "AnnotationDbi", "clusterProfiler", "enrichplot"))
+source("install_dependencies.R")
 ```
+
+This installs every required CRAN and Bioconductor package. See
+[docs/DEPENDENCIES.md](docs/DEPENDENCIES.md) for the full package list and
+troubleshooting.
 
 ------------------------------------------------------------------------
 
@@ -79,10 +72,10 @@ two groups (e.g., GroupA vs GroupB).
 ANALYSIS_NAME <- "GroupA_vs_GroupB"
 
 # Data configuration file
-DATA_CONFIG <- "config/data_sources.csv"
+DATA_CONFIG <- "config/data_sources_TEMPLATE.csv"
 
 # Sample metadata file
-METADATA_FILE <- "config/sample_metadata.txt"
+METADATA_FILE <- "config/sample_metadata_TEMPLATE.txt"
 
 # Experimental design
 BASELINE_LEVEL <- "GroupB"     # Reference group (must match FACTOR_NAME column values)
@@ -258,7 +251,7 @@ OUTPUT_DIR <- "figures"
 
 # Input files
 COUNTS_FILE <- "figures/my_analysis/normalized_counts.xlsx"
-METADATA_FILE <- "config/sample_metadata.txt"
+METADATA_FILE <- "config/sample_metadata_TEMPLATE.txt"
 ```
 
 2.  **Choose gene selection method** (pick ONE):
@@ -331,7 +324,14 @@ visualization
 
 ## Configuration Files {#configuration-files}
 
-### Data Sources Configuration (`config/data_sources.csv`)
+The pipeline ships **template** config files (names ending in `_TEMPLATE`). Edit
+these to describe your data — or, to keep your dataset paths out of version
+control, copy each to a matching `_full` file (e.g. `config/data_sources_full.csv`,
+`config/sample_metadata_full.txt`), fill that in, and point the notebook's
+`DATA_CONFIG` / `METADATA_FILE` parameters at your copy. The `_full` files are
+gitignored.
+
+### Data Sources Configuration (`config/data_sources_TEMPLATE.csv`)
 
 Format:
 
@@ -346,7 +346,7 @@ Dataset2,data/Dataset2/counts.txt,ENSG[0-9]+
 -   `remove_pattern` - Optional regex pattern to clean gene IDs (leave
     empty if not needed)
 
-### Sample Metadata (`config/sample_metadata.txt`)
+### Sample Metadata (`config/sample_metadata_TEMPLATE.txt`)
 
 Tab-delimited format:
 

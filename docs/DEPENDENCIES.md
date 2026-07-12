@@ -46,7 +46,9 @@ install.packages(c(
   "VennDiagram",
   "UpSetR",
   "viridis",
-  "rstudioapi"
+  "rstudioapi",
+  "rmarkdown",
+  "knitr"
 ))
 
 # Install Bioconductor packages
@@ -81,6 +83,8 @@ BiocManager::install(c(
 | **VennDiagram** | Venn diagram visualization | Gene set overlaps |
 | **UpSetR** | UpSet plot visualization for multi-way comparisons | Gene set overlaps |
 | **rstudioapi** | RStudio API for automatic path detection | All main scripts |
+| **rmarkdown** | Render the run_*.Rmd notebooks to HTML reports | All notebooks |
+| **knitr** | Chunk evaluation engine for the notebooks | All notebooks |
 
 ### Bioconductor Packages
 
@@ -182,8 +186,8 @@ After installation, verify that all packages loaded successfully:
 packages <- c(
   "tidyverse", "readxl", "writexl", "ggplot2", "ggrepel", "ggpubr",
   "pheatmap", "RColorBrewer", "viridis", "VennDiagram", "UpSetR",
-  "rstudioapi", "DESeq2", "org.Hs.eg.db", "org.Ss.eg.db",
-  "AnnotationDbi", "clusterProfiler", "enrichplot"
+  "rstudioapi", "rmarkdown", "knitr", "DESeq2", "org.Hs.eg.db",
+  "org.Ss.eg.db", "AnnotationDbi", "clusterProfiler", "enrichplot"
 )
 
 all_loaded <- sapply(packages, function(pkg) {
@@ -249,10 +253,6 @@ renv::snapshot()
 # On another machine, restore exact versions
 renv::restore()
 ```
-
-### Docker Container (Advanced)
-
-For maximum reproducibility, a Docker container can be created. See the main README for details.
 
 ---
 

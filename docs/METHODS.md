@@ -82,7 +82,7 @@ Where:
 
 3. **Negative Binomial GLM Fitting**
    - Maximum likelihood estimation
-   - Beta-binomial distribution for counts
+   - Negative binomial distribution for counts
 
 4. **Hypothesis Testing**
    - Wald test for pairwise comparisons
@@ -289,7 +289,7 @@ For each enriched term:
 
 **Color Schemes:**
 - viridis: perceptually uniform, colorblind-friendly
-- RdBu: diverging palette for fold changes
+- blue_red / blue_yellow: diverging palettes
 
 ### Venn Diagrams and UpSet Plots
 

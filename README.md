@@ -38,7 +38,8 @@ RNAseq/
 │       ├── plotting_themes.R          # Visualization functions
 │       ├── enrichment_analysis.R      # GO/KEGG enrichment
 │       ├── gene_set_operations.R      # Gene set operations and overlaps
-│       └── heatmap_helpers.R          # Heatmap generation
+│       ├── heatmap_helpers.R          # Heatmap generation
+│       └── color_helpers.R            # Shared annotation-color palette
 │
 ├── config/                            # Configuration files
 │   ├── data_sources_TEMPLATE.csv      # Dataset sources template
@@ -111,40 +112,16 @@ This project investigates the transcriptional differences between porcine and hu
 2. Browse to your RNAseq folder
 3. Click "Create Project"
 
-Install required packages in RStudio Console:
+Install all required packages by running the provided script once from the
+project root:
 
 ```r
-# CRAN packages
-install.packages(c(
-  "tidyverse",
-  "readxl",
-  "writexl",
-  "ggplot2",
-  "ggrepel",
-  "ggpubr",
-  "pheatmap",
-  "RColorBrewer",
-  "VennDiagram",
-  "UpSetR",
-  "viridis",
-  "rstudioapi",
-  "rmarkdown",
-  "knitr"
-))
-
-# Bioconductor packages
-if (!require("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install(c(
-  "DESeq2",
-  "org.Hs.eg.db",
-  "org.Ss.eg.db",
-  "AnnotationDbi",
-  "clusterProfiler",
-  "enrichplot"
-))
+source("install_dependencies.R")
 ```
+
+This installs every CRAN and Bioconductor package the pipeline needs and prints
+a pass/fail summary. For the full package list, version requirements, and
+troubleshooting, see [docs/DEPENDENCIES.md](docs/DEPENDENCIES.md).
 
 ## Usage
 
