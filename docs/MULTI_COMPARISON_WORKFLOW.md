@@ -1,6 +1,6 @@
 # Multi-Comparison Workflow Guide
 
-**Date:** December 4, 2025
+**Date:** April 2026
 **Feature:** Flexible gene set comparison across multiple analyses with targeted visualizations
 
 ---
